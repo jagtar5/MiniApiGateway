@@ -5,7 +5,7 @@ A lightweight, configuration-driven reverse proxy written in **Java with Spring 
 > **SE423: Software Construction and Development** | GIK Institute of Engineering Sciences and Technology
 > Instructor: Dr. Mian Muaz Razaq
 
-[![CI](https://github.com/<org>/mini-api-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/<org>/mini-api-gateway/actions)
+
 
 ---
 
