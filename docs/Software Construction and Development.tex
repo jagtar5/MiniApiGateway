@@ -1,0 +1,709 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{amsmath, amssymb}
+\usepackage{array}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{xurl}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.multipart, shapes.geometric, calc, fit, backgrounds}
+\usepackage{listings}
+
+\urlstyle{tt}
+\newcommand{\code}[1]{\texttt{\url{#1}}}
+% \cls: monospaced identifier that can wrap inside narrow table cells (fixes overlapping text)
+\newcommand{\cls}[1]{\nolinkurl{#1}}
+
+% ---- Team members (edit once, used everywhere) ----
+\newcommand{\ma}{Ahmad Nawaz}
+\newcommand{\mb}{Anamta Akmal}
+\newcommand{\mc}{Jagtar Singh}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!8},
+  columns=fullflexible,
+  keepspaces=true
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    citecolor=blue
+}
+
+\setlength{\emergencystretch}{3em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{SE423 - Milestone 1}
+\lhead{Mini API Gateway (MAG)}
+\rfoot{Page \thepage}
+\setlength{\headheight}{14.5pt}
+
+\titleformat{\section}
+ {\normalfont\Large\bfseries\color{black}}{\thesection}{1em}{}
+\titleformat{\subsection}
+ {\normalfont\large\bfseries\color{black}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+ {\normalfont\normalsize\bfseries\color{black}}{\thesubsubsection}{1em}{}
+
+\setlength{\parskip}{0.7em}
+\setlength{\parindent}{0pt}
+\renewcommand{\arraystretch}{1.25}
+
+% ---- UML diagram styles and helpers ----
+\newcommand{\st}[1]{\guillemotleft#1\guillemotright}      % stereotype «...»
+\newcommand{\cn}[1]{{\centering #1\par}}   % centred class-name compartment
+
+\tikzset{
+  % arrows
+  assoc/.style={-{Straight Barb[length=5pt,width=6pt]}, line width=0.6pt},      % directed association (open arrow)
+  dep/.style={dashed, -{Straight Barb[length=5pt,width=6pt]}, line width=0.6pt},% dependency (dashed, open arrow)
+  realize/.style={dashed, -{Triangle[open,length=8pt,width=8pt]}, line width=0.6pt}, % realization
+  pl/.style={dashed, line width=0.6pt},                                          % realization feeder line
+  call/.style={-{Stealth[length=5pt,width=6pt]}, line width=0.8pt},              % external call
+  lbl/.style={font=\tiny, inner sep=1pt, fill=white},
+  role/.style={font=\tiny, inner sep=1.5pt, align=left},
+  % class box: name | attributes | operations
+  class/.style={draw, rectangle split, rectangle split parts=3,
+    rectangle split part fill={gray!12,white,white},
+    font=\scriptsize, align=left, text width=4.6cm, inner xsep=4pt, inner ysep=3pt},
+  note/.style={draw, dashed, font=\tiny, align=left, inner sep=3pt, fill=yellow!10},
+  % component diagram
+  comp/.style={draw, fill=white, minimum width=3.8cm, minimum height=0.9cm,
+    align=center, font=\small, inner xsep=14pt},
+  boundary/.style={draw, rounded corners=2pt, fill=gray!5, thick}
+}
+
+% component icon (rectangle with two small rectangles on the left edge), top-right corner
+\newcommand{\compicon}[1]{%
+  \begin{scope}[shift={($(#1.north east)+(-0.32,-0.12)$)}, line width=0.3pt]
+    \draw[fill=white] (0,0) rectangle (0.24,-0.16);
+    \draw[fill=white] (-0.06,-0.03) rectangle (0.04,-0.07);
+    \draw[fill=white] (-0.06,-0.09) rectangle (0.04,-0.13);
+  \end{scope}}
+
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \includegraphics[width=0.4\textwidth]{Giki Logo.png}
+    \vspace{1.0cm}
+
+    {\Huge\bfseries Mini API Gateway (MAG): A Lightweight, Resilient Reverse Proxy \par}
+    \vspace{1cm}
+    {\LARGE Joint Semester Project -- Milestone 1 \\ Proposal, OOD \& Pattern Plan \par}
+    \vspace{1cm}
+
+    {\Large\bfseries SE423: Software Construction and Development \par}
+    \vspace{0.5cm}
+
+    {\large Instructor: Dr. Mian Muaz Razaq \par}
+    \vspace{0.5cm}
+
+    {\large\bfseries Submitted By: \par}
+    \vspace{0.5cm}
+    \begin{tabular}{l >{\quad} l}
+        \ma & 2023085 \\
+        \mb & 2023113 \\
+        \mc & 2023266 \\
+    \end{tabular}
+
+    \vspace{0.8cm}
+    {\large Repository: \code{https://github.com/jagtar5/MiniApiGateway} \par}
+
+    \vspace{\fill}
+    \textit{Faculty of Computer Science and Engineering}\\
+    \textit{GIK Institute of Engineering Sciences and Technology}\\
+    \vspace{0.5cm}
+    {\large Date: 11 October 2026 \par}
+\end{titlepage}
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+\newpage
+
+%====================================================================
+\section{Introduction and Rubric Coverage}
+%====================================================================
+This is the SE423 Milestone~1 submission. It defines the problem, maps each Section~3.1 requirement to a plan, assigns modules to owners, and presents the object-oriented design, SOLID analysis, pattern choices and repository setup.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{L{6.2cm} c L{5cm}}
+\toprule
+\textbf{M1 Rubric Criterion} & \textbf{Weight} & \textbf{Where Addressed} \\
+\midrule
+Problem definition \& requirement mapping & 15 & Sections~\ref{sec:problem}, \ref{sec:mapping} \\
+Module breakdown \& ownership & 15 & Section~\ref{sec:modules} \\
+Object-oriented design & 25 & Section~\ref{sec:ood} \\
+SOLID application plan & 20 & Section~\ref{sec:solid} \\
+Design-pattern selection \& justification & 15 & Section~\ref{sec:patterns} \\
+Repository \& documentation setup & 10 & Section~\ref{sec:repo} \\
+\bottomrule
+\end{tabular}
+\caption{Rubric coverage.}
+\end{table}
+
+%====================================================================
+\section{Problem Definition and System Description}
+\label{sec:problem}
+%====================================================================
+\textbf{Mini API Gateway (MAG)} is a lightweight, configuration-driven reverse proxy written in Java with Spring Boot. It sits between clients and upstream HTTP services and applies the following through a filter chain we implement ourselves:
+
+\begin{itemize}[noitemsep]
+    \item request identification (\cls{X-Request-Id}) and structured logging;
+    \item stateless JWT validation;
+    \item concurrent, pluggable rate limiting (token bucket, fixed window, sliding-window counter);
+    \item safe caching of GET responses (TTL, LRU eviction, single-flight on miss);
+    \item circuit breaking and timeouts for upstream calls;
+    \item routing and forwarding;
+    \item PostgreSQL-backed, hot-reloadable configuration through an Admin REST API;
+    \item a simple demo dashboard (Section~\ref{sec:scope}).
+\end{itemize}
+
+MAG is \textbf{generic}: routes, limits and cache rules are data, not code, so it can protect any HTTP service without modification.
+
+\subsection{Users and Stakeholders}
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{L{3.4cm} L{5.4cm} L{5.4cm}}
+\toprule
+\textbf{User} & \textbf{Interaction} & \textbf{Primary need} \\
+\midrule
+API client & Sends requests to the gateway instead of the backend & Fast, correct responses; clear error codes (401, 429, 503) \\
+Platform engineer & Changes routes and limits through the Admin API or dashboard & Runtime changes without redeploying or dropping traffic \\
+Backend owner & Places a service behind the gateway & Protection from abuse, overload and cascading failure \\
+Course evaluators & Watch behavior in the dashboard; inspect code and tests & Visible, verifiable behavior \\
+\bottomrule
+\end{tabular}
+\captionof{table}{System users and needs.}
+\endgroup
+
+\subsection{Scope}
+\label{sec:scope}
+\textbf{In scope:}
+\begin{itemize}[noitemsep]
+    \item the five modules of Section~\ref{sec:modules};
+    \item test fixtures: dummy upstream services (\cls{/fast}, \cls{/slow}, \cls{/flaky}, \cls{/cacheable}), a JWT-minting utility and a load script;
+    \item a \textbf{demo dashboard}: one static HTML/JavaScript page served by the gateway, with three panels: (1) live metrics (allowed/blocked counts, cache hit ratio, circuit state); (2) routes and rules (view, edit a limit through the Admin API); (3) a request tester (send a request with a chosen token, show status and headers).
+\end{itemize}
+
+\textbf{Out of scope:}
+\begin{itemize}[noitemsep]
+    \item reading or modifying request/response bodies (only URLs, headers, methods);
+    \item user registration (JWTs are minted elsewhere and only verified here);
+    \item distributed mode (documented, not implemented);
+    \item dashboard features beyond the three panels: no framework, accounts or styling effort; it contains no logic of its own and only calls the Admin API and metrics endpoint. The admin token is typed into the page and never stored in code.
+\end{itemize}
+
+%====================================================================
+\section{Requirement-to-Minimum Mapping (Section 3.1)}
+\label{sec:mapping}
+%====================================================================
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{L{3.6cm} L{6.6cm} L{3.6cm}}
+\caption{Requirement-to-minimum mapping.}\\
+\toprule
+\textbf{Requirement} & \textbf{How MAG meets it} & \textbf{Evidence / milestone} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Requirement} & \textbf{How MAG meets it} & \textbf{Evidence / milestone} \\
+\midrule
+\endhead
+4+ modules with real logic & Five modules: pipeline, identity and traffic control, cache, resilience, configuration and admin (Section~\ref{sec:modules}) & M1: design. M2--M3: code \\
+OOD with SOLID justification & All five principles applied with concrete decisions (Section~\ref{sec:solid}) & M1: analysis. M2--M3: verified in code \\
+3+ patterns incl.\ creational and structural/behavioral & Six patterns: Chain of Responsibility, Strategy, State (behavioral); Factory, Builder (creational); Proxy (structural) & M1: rationale. M2: running \\
+Concurrency with thread-safety strategy & Atomic counters, copy-on-write config, single-flight cache, atomic breaker transitions (Section~\ref{sec:concurrency}) & M1: strategy. M2: stress test \\
+Defensive programming, structured exceptions & Exception hierarchy mapped to HTTP codes by one central mapper; boundary validation (Section~\ref{sec:defensive}) & M1: design. M2: code \\
+Persistent layer with schema & PostgreSQL with Flyway migrations (Section~\ref{sec:schema}) & M1: schema. M2: loaded at startup \\
+TDD, $\geq$60\% coverage, red-green-refactor history & JUnit~5, Mockito, JaCoCo; commit prefixes \cls{test:}, \cls{feat:}, \cls{refactor:}; no squash merges & M1: policy. M3: $\geq$60\% \\
+Hosted Git repo, attributable history & GitHub, feature branch per owner, reviewed pull requests & M1: live \\
+CI on push & GitHub Actions: build, test, coverage, static analysis & M1: running \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+%====================================================================
+\section{Module Breakdown and Ownership}
+\label{sec:modules}
+%====================================================================
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{L{1.0cm} L{3.6cm} L{7.4cm} L{2.2cm}}
+\caption{Modules, scope and primary owner.}\\
+\toprule
+\textbf{ID} & \textbf{Module} & \textbf{One-line scope} & \textbf{Owner} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{ID} & \textbf{Module} & \textbf{One-line scope} & \textbf{Owner} \\
+\midrule
+\endhead
+M-A & Proxy Pipeline & Route matching, our own \cls{GatewayFilter} chain, forwarding, header handling, timeouts, central exception-to-HTTP mapping. & \ma \\
+M-B & Identity \& Traffic Control & JWT validation, pluggable client-key extraction, thread-safe rate limiting with three algorithms. & \mb \\
+M-C & Fast-Path Cache & Safe GET caching with TTL, bounded LRU eviction and single-flight loading. & \mc \\
+M-D & Resilience Engine & Circuit-breaker state machine (closed, open, half-open) with failure tracking and probing. & \mc \\
+M-E & Configuration \& Admin & PostgreSQL routes and rules, validation, immutable snapshot hot reload, last-known-good fallback, Admin REST API. & \mb \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\textbf{Supporting components (not graded modules):} \cls{Clock} abstraction, metrics and logging, dummy upstreams, JWT minter, load script, CI: \ma. Demo dashboard: \mc.
+
+\textbf{Ownership rules:}
+\begin{itemize}[noitemsep]
+    \item Each member writes, tests and defends their own modules in the demo and Q\&A.
+    \item \ma\ delivers the \cls{GatewayFilter} interface and a forward-only walking skeleton early; others build against the interface until then.
+    \item Every pull request is reviewed by another member; concurrency code gets a second human review.
+\end{itemize}
+
+%====================================================================
+\section{Object-Oriented Design}
+\label{sec:ood}
+%====================================================================
+
+\subsection{Architectural Approach}
+MAG is split into a \textbf{plain-Java core} (no Spring annotations) and a thin \textbf{Spring Boot shell}. The core holds all business logic. The shell provides the servlet entry point, dependency-injection wiring, JPA repositories, metrics, and the static dashboard files. The entry point hands each request to \emph{our} filter chain, not Spring's. A multi-module Maven build makes the compiler enforce this: the core cannot import Spring.
+
+\subsection{Component Diagram and Request Flow}
+The cache is a proxy behind the \cls{UpstreamClient} interface and the circuit breaker wraps the HTTP client, so a cache hit never reaches the breaker and cannot distort failure statistics.
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+% ----- actor -----
+\begin{scope}[shift={(0,4.3)}]
+  \draw (0,0.32) circle (0.15);
+  \draw (0,0.17)--(0,-0.25) (-0.22,0.02)--(0.22,0.02) (0,-0.25)--(-0.15,-0.58) (0,-0.25)--(0.15,-0.58);
+\end{scope}
+\node[anchor=west, font=\small] at (0.35,4.3) {Client / Load tool};
+
+% ----- request pipeline (centre column) -----
+\node[comp] (entry) at (0,0)     {Servlet Entry Point\\[-2pt]{\scriptsize (Spring shell)}};
+\node[comp] (rid)   at (0,-1.7)  {RequestIdFilter};
+\node[comp] (auth)  at (0,-3.4)  {AuthFilter\\[-2pt]{\scriptsize (JWT)}};
+\node[comp] (rl)    at (0,-5.1)  {RateLimitFilter};
+\node[comp] (fwd)   at (0,-6.8)  {ForwardFilter};
+\node[comp] (cache) at (0,-8.5)  {CachingUpstreamClient\\[-2pt]{\scriptsize (cache + single-flight)}};
+\node[comp] (res)   at (0,-10.2) {ResilientUpstreamClient\\[-2pt]{\scriptsize (circuit breaker + timeouts)}};
+\node[comp] (http)  at (0,-11.9) {HttpUpstreamClient};
+
+% ----- left column -----
+\node[comp] (err)   at (-5.6,-3.4) {Central Exception\\Mapper};
+\node[comp] (clock) at (-5.6,-9.35) {Clock\\[-2pt]{\scriptsize (injected)}};
+
+% ----- right column -----
+\node[comp] (cfg)  at (5.7,-5.1)  {ConfigSnapshot\\[-2pt]{\scriptsize (AtomicReference)}};
+\node[comp] (mgr)  at (5.7,-7.4)  {Config Manager\\+ Admin API};
+\node[comp] (dash) at (5.7,-9.7)  {Demo Dashboard\\[-2pt]{\scriptsize (static web UI)}};
+
+% ----- external services -----
+\node[cylinder, shape border rotate=90, aspect=0.25, draw, fill=white, minimum height=1.6cm,
+      minimum width=2.6cm, align=center, font=\small] (pg) at (11.8,-7.4) {PostgreSQL};
+\node[comp, minimum width=3.2cm] (up) at (11.8,-11.9) {Upstream\\services};
+
+\foreach \n in {entry,rid,auth,rl,fwd,cache,res,http,err,clock,cfg,mgr,dash,up} {\compicon{\n}}
+
+% ----- boundaries -----
+\begin{scope}[on background layer]
+  \node[boundary, fit=(entry)(rid)(http)(err)(clock)(cfg)(mgr)(dash),
+        inner xsep=0.5cm, inner ysep=0.5cm, yshift=0.4cm] (app) {};
+  \node[boundary, fit=(pg)(up), inner xsep=0.5cm, inner ysep=0.5cm, yshift=0.0cm] (ext) {};
+\end{scope}
+\node[anchor=north west, font=\small\bfseries, inner sep=4pt] at (app.north west) {mini\_api\_gateway (application)};
+\node[anchor=north west, font=\small\bfseries, inner sep=4pt] at (ext.north west) {External services};
+
+% ----- actor uses the entry point -----
+\draw[assoc] (0,3.65) -- node[right, font=\scriptsize]{uses} (entry.north);
+
+% ----- dependencies inside the application (dashed, <<use>>) -----
+\foreach \a/\b in {entry/rid, rid/auth, auth/rl, rl/fwd, fwd/cache, cache/res, res/http}
+  \draw[dep] (\a) -- node[right, lbl, fill=none] {\st{use}} (\b);
+\draw[dep] (auth) -- node[above, lbl] {\st{use}} (err);
+\draw[dep] (rl)   -- node[above, lbl] {\st{use}} (cfg);
+\draw[dep] (mgr)  -- node[right, lbl, fill=none] {\st{use}} (cfg);
+\draw[dep] (dash) -- node[right, lbl, fill=none] {\st{use} (REST)} (mgr);
+\draw[dep] (cache.west) -| node[pos=0.25, above, lbl] {\st{use}} (clock.north);
+\draw[dep] (res.west)   -| node[pos=0.25, above, lbl] {\st{use}} (clock.south);
+
+% ----- external calls (solid, labelled with protocol) -----
+\draw[call] (mgr.east)  -- node[above, lbl] {SQL}  (pg.west);
+\draw[call] (http.east) -- node[above, lbl] {HTTP} (up.west);
+\end{tikzpicture}}
+\caption{Component and request-flow diagram. Dashed arrows are \st{use} dependencies; solid arrows are calls that cross the application boundary.}
+\label{fig:component}
+\end{figure}
+
+\newpage
+\subsection{Class Diagrams}
+
+\subsubsection{Pipeline, Chain of Responsibility and Builder (M-A)}
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+\node[class] (gf) at (0,0) {\cn{\st{interface}\\\textbf{GatewayFilter}}\nodepart{second}\strut\nodepart{third}+doFilter(ctx, chain): void};
+
+\node[class] (rid)  at (-8.4,-5) {\cn{\textbf{RequestIdFilter}}\nodepart{second}\strut\nodepart{third}+doFilter(ctx, chain): void};
+\node[class] (auth) at (-2.8,-5) {\cn{\textbf{AuthFilter}}\nodepart{second}-tokenVerifier: TokenVerifier\nodepart{third}+doFilter(ctx, chain): void};
+\node[class] (rl)   at (2.8,-5)  {\cn{\textbf{RateLimitFilter}}\nodepart{second}-limiterRegistry: LimiterRegistry\\-keyExtractor: KeyExtractor\nodepart{third}+doFilter(ctx, chain): void};
+\node[class] (ff)   at (8.4,-5)  {\cn{\textbf{ForwardFilter}}\nodepart{second}-upstreamClient: UpstreamClient\nodepart{third}+doFilter(ctx, chain): void};
+
+\node[class] (fc) at (0,5) {\cn{\textbf{FilterChain}}\nodepart{second}-position: int\nodepart{third}+proceed(ctx): void};
+\node[class, text width=5.4cm] (pb) at (-7.6,5) {\cn{\textbf{PipelineBuilder}}\nodepart{second}-routeConfig: RouteConfig\nodepart{third}+withAuth(): PipelineBuilder\\+withRateLimit(): PipelineBuilder\\+build(): FilterChain};
+\node[class, text width=5.4cm] (ctx) at (8.4,0) {\cn{\textbf{GatewayContext}}\nodepart{second}-request: GatewayRequest \{readOnly\}\\-response: GatewayResponse\\-attributes: Map<String, Object>\nodepart{third}+shortCircuit(resp): void};
+
+% realization (shared hollow triangle)
+\coordinate (jun) at ($(gf.south)+(0,-1.2)$);
+\foreach \c in {rid,auth,rl,ff} \draw[pl] (\c.north) |- (jun);
+\draw[realize] (jun) -- (gf.south);
+
+% associations / dependencies
+\draw[assoc] (fc.south) -- (gf.north)
+  node[role, near start, right, xshift=2pt] {-filters\\{*}}
+  node[role, near end, right, xshift=2pt, yshift=2pt] {};
+\draw[dep] (pb.east) -- node[above, lbl] {\st{create}} (fc.west);
+\draw[dep] (gf.east) -- node[above, lbl] {\st{use}} (ctx.west);
+\end{tikzpicture}}
+\caption{Filter chain and pipeline builder.}
+\end{figure}
+
+\subsubsection{Upstream Access, Proxy and Resilience (M-A, M-C, M-D)}
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+\node[class, text width=6.8cm] (uc) at (0,0) {\cn{\st{interface}\\\textbf{UpstreamClient}}\nodepart{second}\strut\nodepart{third}+execute(req): UpstreamResponse};
+\node[class] (ff) at (0,5) {\cn{\textbf{ForwardFilter}}\nodepart{second}\strut\nodepart{third}+doFilter(ctx, chain): void};
+
+\node[class] (cache) at (-8.4,-5.5) {\cn{\textbf{CachingUpstreamClient}}\nodepart{second}-cache: BoundedLruCache\\-inFlight: Map<Key, Future>\nodepart{third}+execute(req): UpstreamResponse};
+\node[class] (res)   at (0,-5.5)    {\cn{\textbf{ResilientUpstreamClient}}\nodepart{second}-breaker: CircuitBreaker\nodepart{third}+execute(req): UpstreamResponse};
+\node[class] (http)  at (8.4,-5.5)  {\cn{\textbf{HttpUpstreamClient}}\nodepart{second}-connectTimeout: Duration\\-readTimeout: Duration\nodepart{third}+execute(req): UpstreamResponse};
+
+% realization
+\coordinate (jun) at ($(uc.south)+(0,-1.2)$);
+\foreach \c in {cache,res,http} \draw[pl] (\c.north) |- (jun);
+\draw[realize] (jun) -- (uc.south);
+
+% ForwardFilter -> UpstreamClient
+\draw[assoc] (ff.south) -- (uc.north)
+  node[role, near end, right, xshift=2pt] {-client\\1};
+
+% decorators delegate to the next UpstreamClient
+\draw[assoc] (cache.west) -- ++(-0.9,0) |- (uc.west)
+  node[role, near end, above] {-delegate\\1};
+\draw[assoc] (res.east) -- ++(1.8,0) |- (uc.east)
+  node[role, pos=0.62, right] {-delegate\\1};
+\end{tikzpicture}}
+\caption{\cls{UpstreamClient} proxy chain (cache $\rightarrow$ breaker $\rightarrow$ HTTP).}
+\end{figure}
+
+\subsubsection{Rate Limiting: Strategy and Factory (M-B)}
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+\node[class, text width=4.8cm] (alg) at (0,0) {\cn{\st{interface}\\\textbf{RateLimitAlgorithm}}\nodepart{second}\strut\nodepart{third}+tryAcquire(key): Decision};
+
+\node[class] (tb) at (-7.5,-5.5) {\cn{\textbf{TokenBucket}}\nodepart{second}-capacity: int\\-refillRate: double\\-state: Map<String, Bucket>\\-clock: Clock\nodepart{third}+tryAcquire(key): Decision};
+\node[class] (fw) at (0,-5.5) {\cn{\textbf{FixedWindow}}\nodepart{second}-limit: int\\-window: Duration\\-counters: Map<String, Window>\\-clock: Clock\nodepart{third}+tryAcquire(key): Decision};
+\node[class] (sw) at (7.5,-5.5) {\cn{\textbf{SlidingWindowCounter}}\nodepart{second}-limit: int\\-window: Duration\\-state: Map<String, Counts>\\-clock: Clock\nodepart{third}+tryAcquire(key): Decision};
+
+\node[class, text width=5.6cm] (fac) at (-9.5,0) {\cn{\textbf{RateLimiterFactory}}\nodepart{second}-registry: Map<String, Creator>\nodepart{third}+create(ruleConfig): RateLimitAlgorithm};
+\node[class] (rlf) at (0,5.5) {\cn{\textbf{RateLimitFilter}}\nodepart{second}\strut\nodepart{third}+doFilter(ctx, chain): void};
+\node[class] (ke) at (9.5,5.5) {\cn{\st{interface}\\\textbf{KeyExtractor}}\nodepart{second}\strut\nodepart{third}+extract(ctx): String};
+\node[class] (jk) at (7,0.3) {\cn{\textbf{JwtSubjectKeyExtractor}}\nodepart{second}\strut\nodepart{third}+extract(ctx): String};
+\node[class] (ik) at (12.3,0.3) {\cn{\textbf{ClientIpKeyExtractor}}\nodepart{second}\strut\nodepart{third}+extract(ctx): String};
+
+% realization: algorithms
+\coordinate (jun1) at ($(alg.south)+(0,-1.2)$);
+\foreach \c in {tb,fw,sw} \draw[pl] (\c.north) |- (jun1);
+\draw[realize] (jun1) -- (alg.south);
+% realization: key extractors
+\coordinate (jun2) at ($(ke.south)+(0,-1.1)$);
+\foreach \c in {jk,ik} \draw[pl] (\c.north) |- (jun2);
+\draw[realize] (jun2) -- (ke.south);
+
+% associations
+\draw[assoc] (rlf.south) -- (alg.north)
+  node[role, near end, right, xshift=2pt] {-limiterRegistry\\{*}};
+\draw[assoc] (rlf.east) -- (ke.west)
+  node[role, near end, above] {-keyExtractor\\1};
+% factory creates algorithms
+\draw[dep] (fac.east) -- node[above, lbl] {\st{create}} (alg.west);
+\end{tikzpicture}}
+\caption{Rate-limit algorithms and key extraction (Strategy), \cls{RateLimiterFactory} (Factory).}
+\end{figure}
+
+\subsubsection{Circuit Breaker: State Pattern (M-D)}
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+\node[class] (cb) at (-6.5,0) {\cn{\textbf{CircuitBreaker}}\nodepart{second}-clock: Clock\\-config: BreakerConfig\nodepart{third}+allowRequest(): boolean\\+onSuccess(): void\\+onFailure(): void};
+\node[class] (cs) at (2.5,0) {\cn{\st{interface}\\\textbf{CircuitState}}\nodepart{second}\strut\nodepart{third}+allowRequest(ctx): boolean\\+onSuccess(ctx): void\\+onFailure(ctx): void};
+
+\node[class] (cl) at (-5,-5.5) {\cn{\textbf{ClosedState}}\nodepart{second}-failureWindow: FailureWindow\nodepart{third}+allowRequest(ctx): boolean\\+onSuccess(ctx): void\\+onFailure(ctx): void};
+\node[class] (op) at (2.5,-5.5) {\cn{\textbf{OpenState}}\nodepart{second}-openedAt: Instant\nodepart{third}+allowRequest(ctx): boolean\\+onSuccess(ctx): void\\+onFailure(ctx): void};
+\node[class] (ho) at (10,-5.5) {\cn{\textbf{HalfOpenState}}\nodepart{second}-probesAllowed: int\nodepart{third}+allowRequest(ctx): boolean\\+onSuccess(ctx): void\\+onFailure(ctx): void};
+
+\node[note, anchor=north] (n1) at ($(cl.south)+(0,-0.8)$) {opens when failures\\reach the threshold};
+\node[note, anchor=north] (n2) at ($(op.south)+(0,-0.8)$) {half-opens after\\the open timeout};
+\node[note, anchor=north] (n3) at ($(ho.south)+(0,-0.8)$) {closes on success,\\re-opens on failure};
+\foreach \s/\n in {cl/n1,op/n2,ho/n3} \draw[dashed, line width=0.4pt] (\s.south) -- (\n.north);
+
+% realization
+\coordinate (jun) at ($(cs.south)+(0,-1.2)$);
+\foreach \c in {cl,op,ho} \draw[pl] (\c.north) |- (jun);
+\draw[realize] (jun) -- (cs.south);
+
+% CircuitBreaker delegates to its current state
+\draw[assoc] (cb.east) -- (cs.west)
+  node[role, near end, above] {-state\\1};
+\end{tikzpicture}}
+\caption{Circuit breaker (State pattern).}
+\end{figure}
+
+\subsection{Abstraction and Encapsulation}
+\begin{itemize}[noitemsep]
+    \item \textbf{Contracts:} callers depend on small interfaces (\cls{GatewayFilter}, \cls{RateLimitAlgorithm}, \cls{KeyExtractor}, \cls{UpstreamClient}, \cls{CircuitState}, \cls{ConfigProvider}), never on concrete classes.
+    \item \textbf{Immutable values:} \cls{GatewayRequest}, \cls{RateLimitDecision}, \cls{ConfigSnapshot} and \cls{RouteConfig} are immutable, which also supports thread safety.
+    \item \textbf{Hidden state:} counters, cache entries and breaker counts are private to their owner and reachable only through interface methods; no mutable collection is exposed.
+    \item \textbf{Framework isolation:} Spring types stay in the shell; it converts servlet requests to \cls{GatewayRequest} at the boundary.
+\end{itemize}
+
+\subsection{Cohesion and Coupling}
+\textbf{Cohesion} is functional: each module answers one question. M-B: \emph{may this caller proceed?} M-C: \emph{can this response be reused safely?} M-D: \emph{is this upstream healthy?} M-E: \emph{what are the current rules and how do they change safely?} M-A only orchestrates and holds no policy. Inside M-B, JWT validation, key extraction and quota enforcement are separate classes so security and throughput logic do not mix.
+
+\textbf{Coupling} is kept to interface/data coupling:
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{L{2.8cm} L{4.4cm} L{2.2cm} L{4.4cm}}
+\toprule
+\textbf{Module} & \textbf{Depends on} & \textbf{Coupling} & \textbf{Why acceptable} \\
+\midrule
+M-A Pipeline & \cls{GatewayFilter}, \cls{UpstreamClient}, \cls{ConfigProvider} & Interface & Knows no limiter, cache or breaker internals \\
+M-B Identity \& Traffic & \cls{GatewayContext}, \cls{ConfigProvider}, \cls{Clock} & Interface, data & No dependency on cache, breaker or database \\
+M-C Cache & \cls{UpstreamClient}, \cls{Clock} & Interface & Wraps the interface it implements \\
+M-D Resilience & \cls{UpstreamClient}, \cls{Clock} & Interface & Independent of cache and limiter \\
+M-E Config \& Admin & Repository interface, validator & Interface & Publishes snapshots; calls no other module \\
+Dashboard & Admin REST API, metrics endpoint & HTTP only & No access to core classes \\
+\bottomrule
+\end{tabular}
+\captionof{table}{Module dependencies and coupling.}
+\endgroup
+
+\textbf{Dependency rules:} (1) the shell depends on the core, never the reverse; (2) modules meet only at interfaces; (3) no cyclic dependencies; (4) time comes only from the injected \cls{Clock}.
+
+%====================================================================
+\section{SOLID Application Plan}
+\label{sec:solid}
+%====================================================================
+All five principles are relevant. LSP is only partly observable until M2, when at least two implementations exist.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{L{2.9cm} L{6.6cm} L{4.3cm}}
+\caption{SOLID analysis (all five principles demonstrated through concrete decisions).}\\
+\toprule
+\textbf{Principle / status} & \textbf{Concrete design decision} & \textbf{Justification} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Principle / status} & \textbf{Concrete design decision} & \textbf{Justification} \\
+\midrule
+\endhead
+\textbf{S} Single Responsibility \newline Relevant & One concern per class: each filter does one job; \cls{ConfigValidator}, \cls{ConfigRepository} and \cls{SnapshotPublisher} are separate; error mapping lives only in the central mapper. & A JWT-rule change must not touch throttling or forwarding code. \\
+\textbf{O} Open/ Closed \newline Relevant & A new algorithm is one class plus one factory registration; a new filter is one class plus a builder entry; route behavior comes from configuration. & Extension without editing tested code; verified by an OCP test in M2. \\
+\textbf{L} Liskov Substitution \newline Relevant; partly not yet observable (needs $\geq$2 implementations, M2) & One parametrized contract suite runs on \emph{every} \cls{RateLimitAlgorithm} (never exceeds limit, never negative, no exception on valid input). The three \cls{UpstreamClient} implementations must be interchangeable. & Substitutability is provable only with real implementations; the contract is fixed now so the test precedes the second one. \\
+\textbf{I} Interface Segregation \newline Relevant & Filters see only read-only \cls{ConfigProvider}; only the admin module sees \cls{ConfigPublisher}. \cls{Clock} exposes only \cls{now()}. Core interfaces have one to three methods. & A filter must not be able to change configuration; small interfaces keep test doubles small. \\
+\textbf{D} Dependency Inversion \newline Relevant & The core depends on abstractions (\cls{Clock}, \cls{UpstreamClient}, \cls{ConfigProvider}, \cls{ConfigRepository}); wiring happens only in the shell by constructor injection; the core has no Spring dependency. & Deterministic time-based tests (no sleeps); swappable database and HTTP client. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+%====================================================================
+\section{Design-Pattern Selection and Justification}
+\label{sec:patterns}
+%====================================================================
+Each pattern solves a stated problem and has a proof test; a pattern that fails its proof test is dropped. Six are planned: two creational, one structural, three behavioral.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{L{2.9cm} L{3.5cm} L{3.5cm} L{3.9cm}}
+\caption{Patterns with problem, rejected alternative and proof.}\\
+\toprule
+\textbf{Pattern / location} & \textbf{Problem solved} & \textbf{Rejected alternative} & \textbf{Proof it is genuine} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Pattern / location} & \textbf{Problem solved} & \textbf{Rejected alternative} & \textbf{Proof it is genuine} \\
+\midrule
+\endhead
+\textbf{Chain of Responsibility} (behavioral) \newline \cls{GatewayFilter} pipeline &
+Filters must be orderable, individually testable, and able to stop the request (failed auth skips the rest). &
+One large \cls{handle()} method: mixes concerns, cannot be reordered per route. &
+A filter is added in a test with no other edits; a short-circuit test shows later filters never run. \\
+\textbf{Strategy} (behavioral) \newline \cls{RateLimitAlgorithm}, \cls{KeyExtractor} &
+Routes need different algorithms and client identities (JWT subject or IP). &
+\cls{switch} on an enum: each new algorithm edits tested code (breaks OCP). &
+One contract test runs on every algorithm; a test shows the fixed-window edge burst that token bucket avoids. \\
+\textbf{State} (behavioral) \newline \cls{CircuitBreaker} &
+Each state reacts differently to allow, success and failure; transition rules would scatter. &
+Boolean flags with nested \cls{if}: transitions are hard to read and verify. &
+Each state is tested alone; transitions are driven by the injected \cls{Clock} and checked against the transition table. \\
+\textbf{Factory} (creational) \newline \cls{RateLimiterFactory} &
+Limiters are built from database config at startup and on each reload; callers must not know concrete classes. &
+Direct \cls{TokenBucket} construction in filters: ties callers to concrete types and blocks hot reload. &
+A new algorithm needs one class and one registry entry, no edits elsewhere (OCP test). \\
+\textbf{Builder} (creational) \newline \cls{PipelineBuilder} &
+Each route needs a different chain (cache or auth only on some routes). &
+One hardcoded chain with per-route \cls{if} checks: unreadable and unsafe to change. &
+Two routes from config produce two different chains, verified by comparing filter sequences. \\
+\textbf{Proxy} (structural) \newline \cls{CachingUpstreamClient} &
+Add caching transparently so no other class knows whether it hit the cache. &
+Cache logic inside the forwarder: mixes caching with networking and counts cached hits in breaker statistics. &
+Same \cls{UpstreamClient} interface, swappable in tests; a test asserts a cache hit never reaches the breaker. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+%====================================================================
+\section{Supporting Design Decisions}
+%====================================================================
+
+\subsection{Concurrency and Thread-Safety Strategy}
+\label{sec:concurrency}
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{L{2.6cm} L{3.6cm} L{4.4cm} L{3.2cm}}
+\toprule
+\textbf{Component} & \textbf{Hazard} & \textbf{Strategy} & \textbf{Verification} \\
+\midrule
+Rate-limit state & Check-then-act race (two threads both see 99/100) & Per-key atomic update with \cls{ConcurrentHashMap.compute} on immutable state & Multi-thread stress test: zero over-limit \\
+Configuration & Reader/writer conflict on reload & Immutable \cls{ConfigSnapshot} in an \cls{AtomicReference} (copy-on-write) & Reload under load: no dropped requests \\
+Cache & Concurrent eviction; stampede on expiry & Bounded LRU under a lock; per-key single-flight with \cls{CompletableFuture} & 100 concurrent misses give one upstream call \\
+Circuit breaker & Concurrent success/failure reports & Atomic counters; state change by compare-and-set & Concurrent failures give one OPEN transition \\
+Background work & Idle-key cleanup, config poller & \cls{ScheduledExecutorService} with defined shutdown & Cleanup and shutdown tests \\
+\bottomrule
+\end{tabular}
+\captionof{table}{Thread-safety strategy per component.}
+\endgroup
+
+\subsection{Defensive Programming and Exception Handling}
+\label{sec:defensive}
+\begin{itemize}[noitemsep]
+    \item \textbf{Hierarchy:} \cls{GatewayException} base with \cls{AuthenticationException} (401), \cls{AuthorizationException} (403), \cls{RateLimitExceededException} (429), \cls{UpstreamUnavailableException} (502), \cls{CircuitOpenException} (503), \cls{UpstreamTimeoutException} (504) and \cls{InvalidConfigurationException}.
+    \item \textbf{One mapping point:} a central mapper converts exceptions to HTTP responses; no generic \cls{catch (Exception)}.
+    \item \textbf{Boundary validation:} every module validates its inputs (null, empty, negative limits, malformed JWT, bad route patterns); configuration is validated before it becomes a snapshot.
+    \item \textbf{Fail policy:} fail-open versus fail-closed on dependency failure is recorded in an Architecture Decision Record.
+\end{itemize}
+
+\subsection{Persistent Data Layer}
+\label{sec:schema}
+PostgreSQL with versioned Flyway migrations:
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{L{3.0cm} L{7.2cm} L{3.6cm}}
+\toprule
+\textbf{Table} & \textbf{Key columns} & \textbf{Purpose} \\
+\midrule
+\cls{routes} & \cls{id}, \cls{path_pattern}, \cls{upstream_urls}, \cls{methods}, \cls{auth_required}, \cls{cache_enabled}, \cls{cache_ttl_seconds}, \cls{priority} & Routing rules by priority \\
+\cls{rate_limit_rules} & \cls{id}, \cls{route_id} (FK), \cls{algorithm}, \cls{key_strategy}, \cls{limit}, \cls{window_seconds}, \cls{burst} & Per-route limiter settings \\
+\cls{config_versions} & \cls{version}, \cls{created_at}, \cls{created_by}, \cls{snapshot_json}, \cls{is_active} & Versioning, last-known-good \\
+\bottomrule
+\end{tabular}
+\captionof{table}{Preliminary schema.}
+\endgroup
+
+\subsection{Testing Approach}
+\begin{itemize}[noitemsep]
+    \item Plain JUnit~5 and Mockito for the core; Spring context tests only for a few integration scenarios.
+    \item Injected fake \cls{Clock}, so time-based tests are deterministic with no sleeps.
+    \item JaCoCo runs in CI from M1; $\geq$60\% coverage is enforced by M3.
+\end{itemize}
+
+%====================================================================
+\section{Repository and Documentation Setup}
+\label{sec:repo}
+%====================================================================
+\textbf{Repository:} \code{https://github.com/jagtar5/MiniApiGateway}.
+
+\begin{lstlisting}
+mini-api-gateway/
+|-- gateway-core/        # plain Java: filters, algorithms, cache, breaker
+|-- gateway-app/         # Spring Boot shell: wiring, JPA, admin API,
+|                        #   static demo dashboard (resources/static)
+|-- dummy-upstreams/     # test fixtures: /fast /slow /flaky /cacheable
+|-- tools/               # JWT minter, load scripts
+|-- docs/                # design docs, ADRs, AI usage log
+|-- .github/workflows/   # CI pipeline
+|-- README.md
+\end{lstlisting}
+
+\subsection{Branching Strategy}
+A lightweight \emph{GitHub Flow} variant for a three-person team:
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{L{3.0cm} L{10.8cm}}
+\toprule
+\textbf{Element} & \textbf{Rule} \\
+\midrule
+\cls{main} & Protected and always releasable; changes only by pull request with green CI. \\
+Feature branches & \cls{feature/<owner>-<topic>}, short-lived, one concern each; also \cls{fix/...} and \cls{docs/...}. \\
+Pull requests & Required for every merge; reviewed by a non-author; concurrency changes get a second human review. \\
+Merge method & Merge commit or rebase-and-merge. \textbf{Squash is disabled} to preserve the red-green-refactor trail. \\
+Commit convention & \cls{test:} (red), \cls{feat:} (green), \cls{refactor:}, \cls{fix:}, \cls{docs:}, \cls{chore:}; small commits that build. \\
+Baselines & Annotated tags \cls{m1-baseline}, \cls{m2-baseline}, \cls{m3-baseline}. \\
+Quality gate & CI (build, tests, coverage, static analysis) must pass before merge. \\
+\bottomrule
+\end{tabular}
+\captionof{table}{Branching, merge and baseline rules.}
+\endgroup
+
+\subsection{CI, README and AI Usage Log}
+\textbf{CI:} a GitHub Actions workflow runs on every push and pull request: build with Maven, run tests, publish the JaCoCo report, run SpotBugs and Checkstyle. PostgreSQL comes from a service container or Testcontainers.
+
+\textbf{README:} project summary, architecture and request-flow diagram, prerequisites (JDK, Maven, Docker), build/test/run steps, a route and rule configuration example, branching and commit conventions, and the ownership table. \cls{docs/} holds this document, ADRs (fail-open vs.\ fail-closed, sliding-window counter, snapshot swap vs.\ locking) and the AI Usage Log.
+
+
+\end{document}

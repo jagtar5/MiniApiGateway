@@ -1,0 +1,216 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{xurl}
+
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue}
+
+\newcommand{\ma}{Ahmad Nawaz}
+\newcommand{\mb}{Anamta Akmal}
+\newcommand{\mc}{Jagtar Singh}
+\newcommand{\id}[1]{\texttt{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Mini API Gateway (MAG)}
+\rhead{SE431 -- Milestone 1}
+\rfoot{Page \thepage}
+\setlength{\headheight}{14pt}
+
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.5em}{}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+
+\begin{document}
+
+%-------------------------------------------------------------------
+\begin{titlepage}
+\centering
+\includegraphics[width=0.3\textwidth]{Giki Logo.png}\\[0.8cm]
+{\large\bfseries GHULAM ISHAQ KHAN INSTITUTE\\OF ENGINEERING SCIENCES AND TECHNOLOGY}\\[0.2cm]
+Faculty of Computer Science and Engineering\\[0.8cm]
+SE431 -- Software Quality Assurance\\[0.5cm]
+{\LARGE\bfseries Milestone 1 Proposal}\\[0.4cm]
+{\Large\bfseries Mini API Gateway (MAG)\\[2pt]\normalsize A Lightweight, Resilient Reverse Proxy}\\[1cm]
+Instructor: Dr.\ Mian Muaz Razaq\\[0.8cm]
+{\bfseries Team roster}\\[0.3cm]
+\begin{tabular}{l l l}
+\toprule
+\textbf{Name} & \textbf{Reg.\ No.} & \textbf{Email} \\
+\midrule
+\ma & 2023085 & u2023085@giki.edu.pk \\
+\mb & 2023113 & u2023113@giki.edu.pk \\
+\mc & 2023266 & u2023266@giki.edu.pk \\
+\bottomrule
+\end{tabular}\\[0.6cm]
+Repository: \url{https://github.com/jagtar5/MiniApiGateway}\\[0.3cm]
+Date: 11 October 2026 
+\end{titlepage}
+
+%-------------------------------------------------------------------
+This document is the Milestone~1 quality plan for MAG, a configuration-driven reverse proxy (Java, Spring Boot) that applies JWT validation, rate limiting, safe GET caching and circuit breaking in front of upstream HTTP services. It covers five modules: \textbf{M-A} Proxy Pipeline, \textbf{M-B} Identity \& Traffic Control, \textbf{M-C} Fast-Path Cache, \textbf{M-D} Resilience Engine and \textbf{M-E} Configuration \& Admin. It defines the quality requirements, the Requirements Traceability Matrix (RTM v1), the SQAP outline, the Cost of Quality, relevant standards and the initial risk register. Requirement IDs are shared with our SE423 submission.
+
+\section{Who leads which quality deliverable}
+\begin{tabular}{L{6.0cm} L{3.2cm} L{5.0cm}}
+\toprule
+\textbf{Deliverable} & \textbf{Lead} & \textbf{Reviewers} \\
+\midrule
+Quality requirements + RTM v1 & \ma & \mb, \mc \\
+SQAP outline + Cost of Quality / culture & \mb & \ma, \mc \\
+Standards awareness + risk register & \mc & \ma, \mb \\
+\bottomrule
+\end{tabular}
+
+%-------------------------------------------------------------------
+\section{Quality requirements (ISO/IEC 25010)}
+We selected the characteristics that matter most for a gateway: it sits on every request path, enforces limits under heavy concurrency, and must survive failing upstreams. Each requirement has a unique ID used in the RTM. Performance thresholds are initial targets and will be calibrated against a measured baseline at M2. Portability and a graphical interface are out of scope.
+
+\begin{longtable}{L{3.1cm} L{9.6cm} L{1.8cm}}
+\toprule
+\textbf{Characteristic} & \textbf{Testable requirement} & \textbf{ID} \\
+\midrule
+\endhead
+Functional suitability & A request is routed to the highest-priority matching route; no match returns 404 & \id{MAG-FR-01} \\
+Functional suitability & Up to $N$ requests per window are allowed per client key; request $N{+}1$ gets 429 with \texttt{Retry-After} & \id{MAG-FR-02} \\
+Functional suitability & Only GET responses with status 200 are cached, and an entry is never served after its TTL & \id{MAG-FR-03} \\
+Functional suitability & Every gateway error maps to the right status (401, 403, 429, 502, 503, 504) through one central mapper; none escapes as 500 & \id{MAG-FR-04} \\
+Reliability & Under 100 concurrent threads, admitted requests never exceed the limit (leak rate = 0) & \id{MAG-QR-01} \\
+Reliability & The circuit opens at the failure threshold, fails fast with 503 without calling the upstream, then closes or re-opens after half-open probes & \id{MAG-QR-02} \\
+Reliability & A hanging upstream yields 504 within the configured timeout plus 200~ms and releases the thread & \id{MAG-QR-03} \\
+Reliability & An invalid configuration is rejected and the previous snapshot stays active; a hot reload under load drops 0 requests & \id{MAG-QR-04} \\
+Security & Expired, badly signed, malformed, missing and \texttt{alg=none} tokens are all rejected with 401 & \id{MAG-QR-05} \\
+Security & The cache never serves one user's response to another, and tokens never appear in logs & \id{MAG-QR-06} \\
+Security & Admin API calls without the admin credential are rejected & \id{MAG-QR-07} \\
+Performance efficiency & p99 latency added by the gateway is $\leq 10$~ms at 500 req/s (calibrated at M2) & \id{MAG-QR-08} \\
+Performance efficiency & Memory is bounded: the cache never exceeds its maximum entries and idle client keys are evicted & \id{MAG-QR-09} \\
+Maintainability & Core-logic line coverage $\geq 60\%$; time is injected through a \texttt{Clock}, with no \texttt{Thread.sleep} in unit tests & \id{MAG-QR-10} \\
+Maintainability & Adding a rate-limit algorithm needs one new class and one registration, with no edits to existing algorithms & \id{MAG-QR-11} \\
+Compatibility & A browser login through the gateway to the CrowdServe demo app works (cookies, redirects, static assets) & \id{MAG-QR-12} \\
+Usability (operability) & Invalid Admin API payloads return a 4xx response naming the field and reason & \id{MAG-QR-13} \\
+\bottomrule
+\end{longtable}
+
+%-------------------------------------------------------------------
+\section{Requirements Traceability Matrix (RTM) v1}
+The RTM links each requirement to its planned test approach and owning module. At this stage all entries are planned; test case IDs, execution results and evidence are added in RTM v2 (M2) and v3 (M3). Abbreviations: EP/BVA = equivalence partitioning and boundary value analysis; WB = white-box (control-flow graph, basis paths); UT/IT = unit/integration test; ST = stress test; FI = failure injection.
+
+\begin{longtable}{L{2.0cm} L{4.4cm} L{6.0cm} L{1.7cm}}
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Planned test approach} & \textbf{Module} \\
+\midrule
+\endhead
+\id{MAG-FR-01} & Highest-priority route wins; 404 otherwise & EP/BVA on path patterns and priorities; WB on matcher & M-A \\
+\id{MAG-FR-02} & $N$ allowed, $N{+}1$ rejected with 429 & BVA at $N{-}1$, $N$, $N{+}1$; UT per algorithm; ST & M-B \\
+\id{MAG-FR-03} & Cache only GET/200; TTL respected & EP (method $\times$ status); BVA at TTL $\pm1$ with fake Clock & M-C \\
+\id{MAG-FR-04} & Central error-to-status mapping & EP over exception types; FI; inspection & M-A \\
+\id{MAG-QR-01} & Zero over-limit leak under concurrency & 100-thread stress test, leak count = 0 & M-B \\
+\id{MAG-QR-02} & Circuit open, fail fast, recover & State-transition and basis-path tests with fake Clock; FI & M-D \\
+\id{MAG-QR-03} & Hanging upstream returns 504 in time & FI against dummy \texttt{/slow} upstream; BVA at timeout & M-A, M-D \\
+\id{MAG-QR-04} & Invalid config rejected; reload loses nothing & FI with corrupt rules; ST with concurrent reload & M-E \\
+\id{MAG-QR-05} & Invalid tokens always give 401 & EP/BVA on token classes and expiry boundary & M-B \\
+\id{MAG-QR-06} & No cross-user cache hit; no secrets in logs & Two-user security test; log scan & M-C \\
+\id{MAG-QR-07} & Admin API requires credential & EP; IT (with and without credential) & M-E \\
+\id{MAG-QR-08} & p99 added latency $\leq 10$~ms & k6 load test vs.\ direct upstream; baseline at M2 & All \\
+\id{MAG-QR-09} & Bounded memory & 15-minute soak test; UT on cache size and eviction & M-B, M-C \\
+\id{MAG-QR-10} & $\geq 60\%$ coverage; no sleeps & JaCoCo check in CI; CI code search for \texttt{Thread.sleep} & All \\
+\id{MAG-QR-11} & Add algorithm without editing others & Design inspection; open/closed test & M-B \\
+\id{MAG-QR-12} & CrowdServe login works via gateway & Demo scenario with browser & M-A \\
+\id{MAG-QR-13} & Admin errors name field and reason & EP/BVA on payloads; IT & M-E \\
+\bottomrule
+\end{longtable}
+
+%-------------------------------------------------------------------
+\section{Software Quality Assurance Plan (SQAP) -- IEEE 730}
+The SQAP covers the five MAG modules, the Spring Boot shell, the database schema and the test fixtures. CrowdServe is an external demo upstream and is not assured. For M1 we provide the outline with a one-line plan per mandatory section; the full body is due at M3.
+
+\begin{longtable}{L{3.8cm} L{10.8cm}}
+\toprule
+\textbf{Section} & \textbf{One-line plan for MAG} \\
+\midrule
+\endhead
+Purpose & Assure MAG: no limit leaks, safe caching, fault isolation and safe configuration change, not software in general. \\
+Reference documents & IEEE 730, 1012, 1028; ISO/IEC 25010; ISO/IEC/IEEE 29119-4; project guidelines; SE423 design document. \\
+Management & Three members; each leads one deliverable (Section~1) and is reviewed by the other two. \\
+Documentation & Keep requirements and RTM, design document, test plans and reports, inspection log, risk register and AI log under \texttt{docs/}. \\
+Standards, practices, metrics & Checkstyle; test-first commits; complexity $\leq 10$ per method; coverage $\geq 60\%$; metrics: leak rate, p99 overhead, cache hit ratio. \\
+Reviews and audits & Pull-request review on every merge; M2 Fagan inspection of rate limiter and circuit breaker with one inspector from another team; M3 audit. \\
+Test & M2 black-box (EP/BVA) and white-box (CFG, basis paths) design; M3 execution, stress tests and JaCoCo report; all traced to RTM IDs. \\
+Problem reporting / CAPA & Defects logged as GitHub Issues with severity, owner and disposition; each closed or justified by M3. \\
+Tools and methods & JUnit~5, Mockito, JaCoCo, SpotBugs, Checkstyle, GitHub Actions, k6, Postman; TDD on core logic. \\
+Code / media control & Protected \texttt{main}, PR plus green CI to merge, squash merging disabled, tagged baselines \texttt{m1-baseline} to \texttt{m3-baseline}. \\
+Supplier control & Third-party libraries (Spring, JWT library, PostgreSQL driver, Flyway) from Maven Central with pinned versions and a dependency scan. \\
+Records collection & Keep CI logs, coverage and static-analysis reports, inspection and defect logs and risk register in the repository. \\
+Training & Short sessions before each module (concurrency, JWT security, inspection roles); every member can defend their modules. \\
+Risk management & Maintain the register in Section~7; update every milestone with residual risk. \\
+\bottomrule
+\end{longtable}
+
+%-------------------------------------------------------------------
+\section{Cost of Quality and quality culture}
+We treat quality as part of development, not a phase before the deadline. Reviews, automated tests, static analysis and CI aim to find problems early; a failing test or quality check blocks a merge to \texttt{main}.
+
+\begin{longtable}{L{3.0cm} L{11.8cm}}
+\toprule
+\textbf{Cost type} & \textbf{What that means for MAG} \\
+\midrule
+\endhead
+Prevention & Learning sessions before each module, test-first development, injected Clock, interface contracts, Checkstyle, PR review, CI quality gates \\
+Appraisal & JUnit, JaCoCo, stress and failure-injection tests, M2 inspection, static-analysis triage, load-test baseline \\
+Internal failure & Race conditions, flaky time-based tests and inspection findings found by tests or CI and fixed before the demonstration \\
+External failure & Rate limiter admits over-limit traffic, one user sees another's cached response, or a bad configuration takes the gateway down during the demonstration \\
+\bottomrule
+\end{longtable}
+
+Concurrency defects are the costliest failure type here: they are intermittent and invisible in code reading, so we invest in prevention and targeted appraisal (stress tests, inspection of the limiter and breaker) rather than late debugging. Every finding is logged, fixed and verified by a test, and every quality claim points to evidence in the repository.
+
+%-------------------------------------------------------------------
+\section{Standards awareness (at our project scale)}
+MAG is built by three students in one semester, so we use ideas from these standards without claiming organisational compliance.
+
+\begin{longtable}{L{3.6cm} L{11.2cm}}
+\toprule
+\textbf{Standard / model} & \textbf{How it relates to MAG} \\
+\midrule
+\endhead
+ISO/IEC/IEEE 12207 & We use slices only (requirements, design, construction, verification, configuration management, risk management), not the full life-cycle catalogue. \\
+ISO/IEC 29110 & The very-small-entity profile fits our size: one repository, one RTM, short milestone plans, and a stored artifact for every activity. \\
+CMMI & Not an appraisal. We borrow Level-2 habits as a checklist: RTM for requirements, baselines for configuration, inspection for quality assurance. \\
+\bottomrule
+\end{longtable}
+
+%-------------------------------------------------------------------
+\section{Initial risk register}
+Probability (P) and impact (I) are rated Low (L), Medium (M) or High (H). A risk is High priority when P or I is High and the other is not Low.
+
+\begin{longtable}{L{0.8cm} L{3.4cm} L{0.5cm} L{0.5cm} L{1.4cm} L{4.1cm} L{1.7cm} L{1.1cm}}
+\toprule
+\textbf{ID} & \textbf{Risk} & \textbf{P} & \textbf{I} & \textbf{Priority} & \textbf{Mitigation} & \textbf{Owner} & \textbf{Status} \\
+\midrule
+\endhead
+R1 & Race conditions in rate-limit counters, cache or circuit breaker & H & H & High & Atomic per-key updates; stress tests with zero-leak criterion; second human review; M2 inspection & \mb & Open \\
+R2 & Scope creep and schedule overrun across two courses & H & M & High & Must/Should/Could scope with a cut order; walking skeleton early; weekly progress check & \ma & Open \\
+R3 & AI-generated code the owner cannot explain or verify & M & H & High & Tests written before generation; AI usage log; per-member walkthrough of owned modules & \mc & Open \\
+R4 & JWT flaws (\texttt{alg=none}, no expiry or skew handling) & M & H & High & Vetted JWT library; token-class EP/BVA tests; no secrets in logs & \mb & Open \\
+R5 & Cache serves one user's response to another & M & H & High & Cache only GET/200; skip \texttt{Set-Cookie} and \texttt{private}; user-scoped keys; two-user test & \mc & Open \\
+R6 & Time-based tests are flaky and hide real defects & M & M & Medium & Inject a Clock; ban \texttt{Thread.sleep} in unit tests via CI check & \ma & Open \\
+R7 & No external inspector available for the M2 Fagan inspection & M & H & High & Ask the instructor to arrange pairing early & \ma & Open \\
+\bottomrule
+\end{longtable}
+
+%-------------------------------------------------------------------
+\section*{Conclusion}
+This plan defines how we will assess and maintain the quality of MAG. Our priorities are accurate rate limiting under concurrency, fault isolation, safe caching and safe configuration change. Later milestones will add test case IDs, executed results, inspection records, coverage reports and residual risk to this plan.
+
+\end{document}
