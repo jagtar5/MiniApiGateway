@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ================================================================
+         Parent POM — Mini API Gateway (MAG)
+         This file manages shared versions and declares the two sub-modules.
+         gateway-core  : plain-Java business logic — ZERO Spring / DB imports.
+         gateway-app   : Spring Boot shell; wiring, JPA, Admin API, dashboard.
+         ================================================================ -->
+
+    <groupId>com.mag</groupId>
+    <artifactId>mini-api-gateway</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Mini API Gateway (MAG) — Parent</name>
+    <description>
+        Lightweight, configuration-driven reverse proxy.
+        Applies JWT validation, rate limiting, caching and circuit breaking.
+    </description>
+
+    <modules>
+        <module>gateway-core</module>
+        <module>gateway-app</module>
+        <module>dummy-upstreams</module>
+    </modules>
+
+    <!-- ---- Shared version properties ---- -->
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Spring Boot -->
+        <spring-boot.version>3.3.4</spring-boot.version>
+
+        <!-- JWT -->
+        <jjwt.version>0.12.6</jjwt.version>
+
+        <!-- Database -->
+        <postgresql.version>42.7.4</postgresql.version>
+        <flyway.version>10.18.0</flyway.version>
+
+        <!-- Testing -->
+        <junit.version>5.11.0</junit.version>
+        <mockito.version>5.12.0</mockito.version>
+        <testcontainers.version>1.20.1</testcontainers.version>
+
+        <!-- Static analysis / quality -->
+        <checkstyle.version>10.18.1</checkstyle.version>
+        <spotbugs.version>4.8.6</spotbugs.version>
+        <jacoco.version>0.8.12</jacoco.version>
+        <jacoco.minimum.coverage>0.60</jacoco.minimum.coverage>
+    </properties>
+
+    <!-- ---- Dependency Management (versions pinned here, declared in modules) ---- -->
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- Spring Boot BOM -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Internal modules -->
+            <dependency>
+                <groupId>com.mag</groupId>
+                <artifactId>gateway-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- JWT -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <!-- PostgreSQL driver -->
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <!-- Flyway -->
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>${flyway.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-database-postgresql</artifactId>
+                <version>${flyway.version}</version>
+            </dependency>
+
+            <!-- JUnit 5 -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Mockito -->
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Testcontainers -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- ---- Plugin Management ---- -->
+    <build>
+        <pluginManagement>
+            <plugins>
+
+                <!-- Compiler -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+
+                <!-- Surefire (JUnit 5) -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.0</version>
+                </plugin>
+
+                <!-- JaCoCo — coverage gate (≥60 %) enforced at verify phase -->
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                    <executions>
+                        <execution>
+                            <id>prepare-agent</id>
+                            <goals><goal>prepare-agent</goal></goals>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>verify</phase>
+                            <goals><goal>report</goal></goals>
+                        </execution>
+                        <execution>
+                            <id>check</id>
+                            <phase>verify</phase>
+                            <goals><goal>check</goal></goals>
+                            <configuration>
+                                <rules>
+                                    <rule>
+                                        <element>BUNDLE</element>
+                                        <limits>
+                                            <limit>
+                                                <counter>LINE</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>${jacoco.minimum.coverage}</minimum>
+                                            </limit>
+                                        </limits>
+                                    </rule>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Checkstyle -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>3.5.0</version>
+                    <configuration>
+                        <configLocation>checkstyle.xml</configLocation>
+                        <failsOnError>true</failsOnError>
+                        <consoleOutput>true</consoleOutput>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>validate</id>
+                            <phase>validate</phase>
+                            <goals><goal>check</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- SpotBugs -->
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>4.8.6.4</version>
+                    <executions>
+                        <execution>
+                            <id>spotbugs</id>
+                            <phase>verify</phase>
+                            <goals><goal>check</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Spring Boot (used only in gateway-app) -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>
