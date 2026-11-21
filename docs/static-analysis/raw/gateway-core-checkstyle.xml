@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="9.3">
+<file name="D:\MiniApiGateway\gateway-core\src\main\java\com\mag\core\filter\impl\RequestIdFilter.java">
+</file>
+<file name="D:\MiniApiGateway\gateway-core\src\main\java\com\mag\core\upstream\impl\CachingUpstreamClient.java">
+</file>
+<file name="D:\MiniApiGateway\gateway-core\src\main\java\com\mag\core\upstream\impl\ResilientUpstreamClient.java">
+</file>
+</checkstyle>

@@ -4,7 +4,6 @@ import com.mag.core.filter.FilterChain;
 import com.mag.core.filter.GatewayContext;
 import com.mag.core.filter.GatewayFilter;
 
-import java.util.UUID;
 
 /**
  * M-A: Proxy Pipeline

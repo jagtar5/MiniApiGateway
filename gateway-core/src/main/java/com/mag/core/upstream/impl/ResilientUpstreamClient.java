@@ -42,15 +42,20 @@ public class ResilientUpstreamClient implements UpstreamClient {
         UpstreamResponse response;
         try {
             response = delegate.execute(request);
-        } catch (Throwable t) {
+        } catch (RuntimeException t) {
             circuitBreaker.onFailure();
             if (t instanceof GatewayException ge) {
                 throw ge;
             }
-            if (t instanceof RuntimeException re) {
-                throw re;
-            }
-            throw new UpstreamUnavailableException("Upstream call failed: " + t.getMessage(), t);
+            throw t;
+        } catch (Error t) {
+            circuitBreaker.onFailure();
+            throw t;
+        }
+
+        if (response == null) {
+            circuitBreaker.onFailure();
+            throw new UpstreamUnavailableException("Upstream returned a null response", null);
         }
 
         // 3. Status check: 5xx counts as upstream failure, < 500 counts as success
