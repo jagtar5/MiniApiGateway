@@ -5,12 +5,10 @@
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- ================================================================
-         Parent POM — Mini API Gateway (MAG)
+    <!-- Parent POM — Mini API Gateway (MAG)
          This file manages shared versions and declares the two sub-modules.
          gateway-core  : plain-Java business logic — ZERO Spring / DB imports.
-         gateway-app   : Spring Boot shell; wiring, JPA, Admin API, dashboard.
-         ================================================================ -->
+         gateway-app   : Spring Boot shell; wiring, JPA, Admin API, dashboard. -->
 
     <groupId>com.mag</groupId>
     <artifactId>mini-api-gateway</artifactId>
@@ -29,7 +27,7 @@
         <module>dummy-upstreams</module>
     </modules>
 
-    <!-- ---- Shared version properties ---- -->
+    <!-- Shared version properties -->
     <properties>
         <java.version>21</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -58,7 +56,7 @@
         <jacoco.minimum.coverage>0.60</jacoco.minimum.coverage>
     </properties>
 
-    <!-- ---- Dependency Management (versions pinned here, declared in modules) ---- -->
+    <!-- Dependency Management (versions pinned here, declared in modules) -->
     <dependencyManagement>
         <dependencies>
 
@@ -151,7 +149,7 @@
         </dependencies>
     </dependencyManagement>
 
-    <!-- ---- Plugin Management ---- -->
+    <!-- Plugin Management -->
     <build>
         <pluginManagement>
             <plugins>

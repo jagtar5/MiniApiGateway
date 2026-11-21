@@ -5,11 +5,9 @@
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- ================================================================
-         dummy-upstreams — Test fixtures for /fast /slow /flaky /cacheable
+    <!-- dummy-upstreams — Test fixtures for /fast /slow /flaky /cacheable
          A minimal Spring Boot application providing controlled upstream
-         endpoints for integration and stress testing.
-         ================================================================ -->
+         endpoints for integration and stress testing. -->
 
     <parent>
         <groupId>com.mag</groupId>

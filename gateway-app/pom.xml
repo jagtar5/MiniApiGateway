@@ -5,11 +5,9 @@
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- ================================================================
-         gateway-app — Spring Boot shell.
+    <!-- gateway-app — Spring Boot shell.
          Wires the core, provides JPA repositories, Admin REST API,
-         metrics, and static demo dashboard files.
-         ================================================================ -->
+         metrics, and static demo dashboard files. -->
 
     <parent>
         <groupId>com.mag</groupId>
@@ -22,13 +20,13 @@
 
     <dependencies>
 
-        <!-- ---- Internal: plain-Java core ---- -->
+        <!-- Internal: plain-Java core -->
         <dependency>
             <groupId>com.mag</groupId>
             <artifactId>gateway-core</artifactId>
         </dependency>
 
-        <!-- ---- Spring Boot ---- -->
+        <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -42,7 +40,7 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- ---- JWT implementation ---- -->
+        <!-- JWT implementation -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -58,7 +56,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- ---- Database ---- -->
+        <!-- Database -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -73,7 +71,7 @@
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
-        <!-- ---- Testing ---- -->
+        <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
