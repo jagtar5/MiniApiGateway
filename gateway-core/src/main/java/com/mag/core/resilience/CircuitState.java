@@ -1,20 +1,23 @@
 package com.mag.core.resilience;
 
 /**
- * M-D: Resilience Engine — State pattern
+ * M-D: Resilience Engine — State pattern.
  *
  * Defines the behaviour of the circuit breaker in a single state.
- * Each concrete state ({@link impl.ClosedState}, {@link impl.OpenState},
- * {@link impl.HalfOpenState}) implements this interface independently;
+ * Each concrete state ({@link com.mag.core.resilience.impl.ClosedState},
+ * {@link com.mag.core.resilience.impl.OpenState},
+ * {@link com.mag.core.resilience.impl.HalfOpenState}) implements this interface independently;
  * transition logic lives inside the state, not in a conditional block.
  *
- * ISP: three small methods, no unrelated concerns.
+ * ISP: focused interface, no unrelated concerns.
  */
 public interface CircuitState {
 
     /**
+     * Determines whether the next request may proceed to upstream.
+     *
      * @param ctx the owning circuit breaker (allows state transition via ctx.transitionTo)
-     * @return true if the request may proceed to the upstream
+     * @return true if the request may proceed to the upstream, false if rejected fast
      */
     boolean allowRequest(CircuitBreaker ctx);
 
@@ -31,4 +34,11 @@ public interface CircuitState {
      * @param ctx the owning circuit breaker
      */
     void onFailure(CircuitBreaker ctx);
+
+    /**
+     * Returns the human-readable name of this state (CLOSED, OPEN, HALF_OPEN).
+     *
+     * @return state name
+     */
+    String getName();
 }
