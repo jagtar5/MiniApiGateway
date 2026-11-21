@@ -1,0 +1,270 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{amsmath, amssymb}
+\usepackage{array}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{xurl}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.multipart, shapes.geometric, calc, fit, backgrounds}
+\usepackage{listings}
+
+\urlstyle{tt}
+\newcommand{\code}[1]{\texttt{\url{#1}}}
+% \cls: monospaced identifier that can wrap inside narrow table cells (fixes overlapping text)
+\newcommand{\cls}[1]{\nolinkurl{#1}}
+
+% ---- Team members (edit once, used everywhere) ----
+\newcommand{\ma}{Ahmad Nawaz}
+\newcommand{\mb}{Anamta Akmal}
+\newcommand{\mc}{Jagtar Singh}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!8},
+  columns=fullflexible,
+  keepspaces=true
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    citecolor=blue
+}
+
+\setlength{\emergencystretch}{3em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{SE423 - Milestone 2}
+\lhead{Mini API Gateway (MAG)}
+\rfoot{Page \thepage}
+\setlength{\headheight}{14.5pt}
+
+\titleformat{\section}
+ {\normalfont\Large\bfseries\color{black}}{\thesection}{1em}{}
+\titleformat{\subsection}
+ {\normalfont\large\bfseries\color{black}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+ {\normalfont\normalsize\bfseries\color{black}}{\thesubsubsection}{1em}{}
+
+\setlength{\parskip}{0.7em}
+\setlength{\parindent}{0pt}
+\renewcommand{\arraystretch}{1.25}
+
+% ---- UML diagram styles and helpers ----
+\newcommand{\st}[1]{\guillemotleft#1\guillemotright}      % stereotype «...»
+\newcommand{\cn}[1]{{\centering #1\par}}   % centred class-name compartment
+
+\tikzset{
+  % arrows
+  assoc/.style={-{Straight Barb[length=5pt,width=6pt]}, line width=0.6pt},      % directed association (open arrow)
+  dep/.style={dashed, -{Straight Barb[length=5pt,width=6pt]}, line width=0.6pt},% dependency (dashed, open arrow)
+  realize/.style={dashed, -{Triangle[open,length=8pt,width=8pt]}, line width=0.6pt}, % realization
+  pl/.style={dashed, line width=0.6pt},                                          % realization feeder line
+  call/.style={-{Stealth[length=5pt,width=6pt]}, line width=0.8pt},              % external call
+  lbl/.style={font=\tiny, inner sep=1pt, fill=white},
+  role/.style={font=\tiny, inner sep=1.5pt, align=left},
+  % class box: name | attributes | operations
+  class/.style={draw, rectangle split, rectangle split parts=3,
+    rectangle split part fill={gray!12,white,white},
+    font=\scriptsize, align=left, text width=4.6cm, inner xsep=4pt, inner ysep=3pt},
+  note/.style={draw, dashed, font=\tiny, align=left, inner sep=3pt, fill=yellow!10},
+  % component diagram
+  comp/.style={draw, fill=white, minimum width=3.8cm, minimum height=0.9cm,
+    align=center, font=\small, inner xsep=14pt},
+  boundary/.style={draw, rounded corners=2pt, fill=gray!5, thick}
+}
+
+% component icon (rectangle with two small rectangles on the left edge), top-right corner
+\newcommand{\compicon}[1]{%
+  \begin{scope}[shift={($(#1.north east)+(-0.32,-0.12)$)}, line width=0.3pt]
+    \draw[fill=white] (0,0) rectangle (0.24,-0.16);
+    \draw[fill=white] (-0.06,-0.03) rectangle (0.04,-0.07);
+    \draw[fill=white] (-0.06,-0.09) rectangle (0.04,-0.13);
+  \end{scope}}
+
+
+
+% M2 evidence placeholders should be replaced only with verified facts.
+\newcommand{\todo}[1]{\textcolor{red!70!black}{\textbf{[TO COMPLETE: #1]}}}
+\newcommand{\evidence}[1]{\texttt{#1}}
+
+\begin{document}
+\begin{titlepage}
+\centering
+\IfFileExists{Giki Logo.png}{\includegraphics[width=0.4\textwidth]{Giki Logo.png}}{\vspace*{1cm}}
+\vspace{1cm}
+{\Huge\bfseries Mini API Gateway (MAG): A Lightweight, Resilient Reverse Proxy\par}
+\vspace{1cm}
+{\LARGE Joint Semester Project -- Milestone 2\\Working Architecture, Patterns, Concurrency \& Verification Baseline\par}
+\vspace{1cm}
+{\Large\bfseries SE423: Software Construction and Development\par}
+\vspace{0.5cm}
+{\large Instructor: Dr. Mian Muaz Razaq\par}
+\vspace{0.6cm}
+{\large\bfseries Submitted By:\par}
+\vspace{0.3cm}
+\begin{tabular}{ll}\ma & 2023085 \\\mb & 2023113 \\\mc & 2023266\end{tabular}
+\vspace{0.7cm}
+{\large Repository: \url{https://github.com/jagtar5/MiniApiGateway}\par}
+\vspace{\fill}
+\textit{Faculty of Computer Science and Engineering}\\
+\textit{GIK Institute of Engineering Sciences and Technology}\\[0.4cm]
+{\large Date: \todo{submission date}\par}
+\end{titlepage}
+\tableofcontents
+\newpage
+
+\section{Introduction and Milestone 2 Rubric Coverage}
+This report documents the \emph{implemented} Milestone~2 build of the Mini API Gateway (MAG). It follows the Milestone~1 design and references only code, tests and artifacts verified at the submitted commit. Any incomplete implementation is identified as such rather than represented as complete.
+\begin{table}[H]\centering\small
+\begin{tabular}{L{6cm} c L{5.2cm}}\toprule
+\textbf{SE423 M2 criterion} & \textbf{Weight} & \textbf{Evidence in this report}\\\midrule
+Working core architecture & 20\% & Section~\ref{sec:core}\\
+Design patterns implemented correctly & 20\% & Section~\ref{sec:patterns}\\
+Defensive programming and exception handling & 10\% & Section~\ref{sec:defensive}\\
+Concurrency and thread-safety implementation & 15\% & Section~\ref{sec:concurrency}\\
+Code quality and SOLID adherence & 15\% & Section~\ref{sec:solid}\\
+TDD and automated-test baseline & 10\% & Section~\ref{sec:tdd}\\
+Repository discipline and traceability & 10\% & Section~\ref{sec:repo}\\\bottomrule
+\end{tabular}\caption{SE423 M2 rubric cross-reference.}\end{table}
+\textbf{Submitted source revision:} \todo{Git commit hash and M2 baseline tag}.
+
+\section{Working Core Architecture (20\%)}\label{sec:core}
+\subsection{Architecture Compared with Milestone 1}
+The proposed system consists of \textbf{M-A} Proxy Pipeline, \textbf{M-B} Identity \& Traffic Control, \textbf{M-C} Fast-Path Cache, \textbf{M-D} Resilience Engine and \textbf{M-E} Configuration \& Admin. The Maven modules are \texttt{gateway-core} and \texttt{gateway-app}; the former contains domain logic and the latter the Spring Boot application shell.
+\begin{longtable}{L{1.2cm} L{3.8cm} L{2cm} L{5.2cm}}\toprule
+\textbf{Module} & \textbf{M2 functionality} & \textbf{Status} & \textbf{Code/test evidence}\\\midrule\endhead
+M-A & Request ID, JWT authentication, forwarding, exception mapping & \todo{status} & \todo{classes and test links}\\
+M-B & Token bucket, fixed and sliding window, rate-limit filter & \todo{status} & \todo{classes and test links}\\
+M-C & GET/200 bounded cache, TTL, single-flight & \todo{status} & \todo{classes and test links}\\
+M-D & Circuit breaker closed/open/half-open lifecycle & \todo{status} & \todo{classes and test links}\\
+M-E & Persistence, admin API, validation, snapshot reload & \todo{status} & \todo{classes and test links}\\\bottomrule\end{longtable}
+\subsection{Request Path and Integration}
+Planned filter order: \texttt{RequestIdFilter} $\rightarrow$ \texttt{AuthFilter} $\rightarrow$ \texttt{RateLimitFilter} $\rightarrow$ \texttt{ForwardFilter}. Planned upstream decorator order: \texttt{CachingUpstreamClient} $\rightarrow$ \texttt{ResilientUpstreamClient} $\rightarrow$ \texttt{HttpUpstreamClient}. \todo{confirm actual order against merged code}.
+\begin{figure}[H]\centering
+\begin{tikzpicture}[node distance=0.55cm and 0.48cm, every node/.style={font=\footnotesize}, >=Latex]
+\node[draw,rounded corners,minimum height=0.85cm] (client) {Client};
+\node[draw,rounded corners,right=of client,minimum height=0.85cm,align=center] (filters) {Filter chain\\M-A / M-B};
+\node[draw,rounded corners,right=of filters,minimum height=0.85cm,align=center] (cache) {Cache\\M-C};
+\node[draw,rounded corners,right=of cache,minimum height=0.85cm,align=center] (breaker) {Breaker\\M-D};
+\node[draw,rounded corners,right=of breaker,minimum height=0.85cm,align=center] (up) {Upstream};
+\draw[->] (client)--(filters);\draw[->](filters)--(cache);\draw[->](cache)--(breaker);\draw[->](breaker)--(up);
+\node[draw,rounded corners,below=1cm of cache,align=center] (config) {M-E: validated configuration snapshot};
+\draw[->,dashed] (config)--(filters);\draw[->,dashed] (config)--(breaker);
+\end{tikzpicture}
+\caption{Proposed integration view; revise if actual wiring differs.}\end{figure}
+\subsection{End-to-End Demonstration}
+\begin{longtable}{L{4.3cm} L{4.2cm} L{4.1cm}}\toprule
+\textbf{Scenario} & \textbf{Expected} & \textbf{Observed result / evidence}\\\midrule\endhead
+Valid signed JWT to \texttt{/fast} & Proxied upstream response & \todo{HTTP result and run link}\\
+Missing/invalid JWT & HTTP 401; no upstream call & \todo{result}\\
+Rate limit $N+1$ & HTTP 429 and Retry-After & \todo{result}\\
+Flaky upstream circuit threshold & Breaker opens and fails fast & \todo{result}\\
+Cacheable repeated GET & Second request served from safe cache & \todo{result}\\
+Invalid configuration reload & Previous snapshot remains active & \todo{result}\\\bottomrule\end{longtable}
+\textbf{Architecture deviations from M1:} \todo{list and justify, or state none after review}.
+
+\section{Implemented Design Patterns (20\%)}\label{sec:patterns}
+Document only patterns present and actually connected to the running system. The M1 pattern plan included Chain of Responsibility, Strategy, Factory, State, Proxy and Builder.
+\begin{longtable}{L{2.9cm} L{3.3cm} L{3.8cm} L{3.1cm}}\toprule
+\textbf{Pattern / type} & \textbf{Concrete classes} & \textbf{Problem and benefit} & \textbf{Code/test proof}\\\midrule\endhead
+Chain of Responsibility (behavioral) & GatewayFilter, FilterChain & Ordered independent request processing & \todo{evidence}\\
+Strategy (behavioral) & RateLimitAlgorithm implementations & Replace limits without rewriting filter & \todo{evidence}\\
+Factory (creational) & RateLimiterFactory & Register and construct algorithms & \todo{evidence}\\
+State (behavioral) & CircuitState / breaker states & Explicit transitions and fail-fast behavior & \todo{evidence}\\
+Proxy (structural) & CachingUpstreamClient, ResilientUpstreamClient & Decorate upstream without changing interface & \todo{evidence}\\
+Builder (creational) & PipelineBuilder & Safe assembly of ordered filters & \todo{evidence}\\\bottomrule\end{longtable}
+\textbf{Rejected alternatives and rationale:} \todo{for each demonstrated pattern, describe at least one alternative, its drawback and the real benefit of selected pattern}.
+\textbf{Runtime proof:} \todo{identify an integration test or demonstration for at least three patterns, including creational and structural/behavioral}.
+
+\section{Defensive Programming and Exception Handling (10\%)}\label{sec:defensive}
+\begin{longtable}{L{3.3cm} L{4.5cm} L{4.5cm}}\toprule
+\textbf{Boundary} & \textbf{Validation / failure policy} & \textbf{Implemented evidence}\\\midrule\endhead
+JWT authentication & Missing, malformed, expired, bad signature and \texttt{alg=none} rejected & \todo{tests / 401 response}\\
+Route/config inputs & Missing URL/path, negative TTL/rules rejected & \todo{validation tests}\\
+Admin API & Authentication/authorization, field-level errors & \todo{API tests}\\
+Upstream calls & Timeout; failures mapped centrally & \todo{504/502/503 tests}\\
+Cross-module faults & Structured exceptions; no confidential data in logs & \todo{mapper/logger evidence}\\\bottomrule\end{longtable}
+\textbf{Exception hierarchy / status mapping:} \todo{add actual exception classes and mapped statuses}.\\
+\textbf{Logging and secret-handling:} \todo{describe verified request IDs and token redaction}.
+
+\section{Concurrency and Thread-Safety (15\%)}\label{sec:concurrency}
+\begin{longtable}{L{3cm} L{4cm} L{4.3cm} L{1.5cm}}\toprule
+\textbf{Component} & \textbf{Hazard} & \textbf{Actual protection / test} & \textbf{Result}\\\midrule\endhead
+Rate limiter & Check-then-act allows over-limit requests & \todo{ConcurrentHashMap.compute / stress test} & \todo{value}\\
+Cache single-flight & Stampede on same key & \todo{future map and 100-request test} & \todo{value}\\
+Circuit breaker & Duplicate state transitions & \todo{CAS and concurrent test} & \todo{value}\\
+Config hot reload & Reader sees inconsistent state & \todo{immutable snapshot and AtomicReference} & \todo{value}\\\bottomrule\end{longtable}
+\textbf{Concurrency proof:} \todo{exact number of threads, repetitions, outcomes and CI link}.\\
+\textbf{Thread safety document:} \todo{link docs/thread-safety-strategy.md}.
+
+\section{Code Quality and SOLID Adherence (15\%)}\label{sec:solid}
+\begin{longtable}{L{1cm} L{5.6cm} L{5.7cm}}\toprule
+\textbf{SOLID} & \textbf{Applied design decision} & \textbf{Actual code / test proof}\\\midrule\endhead
+S & Separate pipeline, algorithm, cache, resilience and config responsibilities & \todo{class locations}\\
+O & Extend RateLimitAlgorithm via registry & \todo{dummy strategy extension test}\\
+L & Replace UpstreamClient and rate-limit implementations under contract & \todo{parametrized contract tests}\\
+I & Small filter, client and configuration interfaces & \todo{interface signatures}\\
+D & Core depends on interfaces, shell supplies concrete clients & \todo{dependency evidence}\\\bottomrule\end{longtable}
+\textbf{Findings and resolutions:} \todo{list any code smells or SOLID departures, issue and resolution or justification}.
+
+\section{TDD and Automated-Test Baseline (10\%)}\label{sec:tdd}
+The M2 rubric requires test execution against implemented business logic, authentic red--green--refactor history and measured coverage. A 60\% threshold is a final minimum, not an M2 percentage threshold.
+\begin{longtable}{L{3.5cm} L{3.6cm} L{5.1cm}}\toprule
+\textbf{Evidence} & \textbf{Measured/observed} & \textbf{Artifact}\\\midrule\endhead
+Maven unit test summary & \todo{passed / failed / skipped} & \todo{Surefire report path}\\
+Core line coverage (JaCoCo) & \todo{measured percentage} & \todo{JaCoCo HTML/XML link}\\
+Pipeline tests & \todo{status} & \todo{JUnit files}\\
+Rate-limit/concurrency tests & \todo{status} & \todo{JUnit files}\\
+Cache and breaker tests & \todo{status} & \todo{JUnit files}\\
+Integration tests & \todo{status} & \todo{CI and test files}\\
+Red/green/refactor trace & \todo{three real commits} & \todo{commit links}\\\bottomrule\end{longtable}
+\textbf{Verification command(s):} \texttt{mvn clean verify}; \todo{additional goals that actually ran}.\\
+\textbf{Coverage gaps:} \todo{important untested paths and planned M3 actions}.
+
+\section{Repository Discipline and Contribution Traceability (10\%)}\label{sec:repo}
+\begin{longtable}{L{3.0cm} L{4.3cm} L{5cm}}\toprule
+\textbf{Control} & \textbf{Agreed approach} & \textbf{M2 evidence}\\\midrule\endhead
+Branching & Independent feature branches and PRs & \todo{PR links}\\
+Review & Non-author reviewer for merges & \todo{review records}\\
+CI gate & Build and tests on push/PR & \todo{workflow/run link}\\
+TDD commit trail & \texttt{test:}, \texttt{feat:}, \texttt{refactor:} commits & \todo{commit hashes}\\
+Baseline & Annotated \texttt{m2-baseline} tag & \todo{tag target / creation}\\
+AI transparency & Recorded significant assisted changes & \todo{AI log path/entry IDs}\\\bottomrule\end{longtable}
+\subsection{Individual Responsibility and Evidence}
+\begin{longtable}{L{2.7cm} L{4.4cm} L{5.2cm}}\toprule
+\textbf{Member} & \textbf{Owned work} & \textbf{PR / tests / review evidence}\\\midrule\endhead
+\ma & M-A, SOLID tests, CI and construction evidence & \todo{links}\\
+\mb & M-B, M-E and concurrency tests & \todo{links}\\
+\mc & M-C, M-D, integration and dashboard & \todo{links}\\\bottomrule\end{longtable}
+
+\section{M2 Build Reproduction and Handover}
+\textbf{Environment:} \todo{actual JDK, Maven, Docker and database versions}.\\
+\textbf{Setup and start steps:} \todo{copy verified README commands and environment variables without secrets}.\\
+\textbf{Known limitations:} \todo{honest summary of incomplete or deferred capabilities}.\\
+\textbf{M3 follow-ups:} \todo{coverage improvements, refactoring, robustness and final demo actions}.
+
+\section*{Conclusion}
+\todo{Summarize objectively what works, what evidence was collected and what remains incomplete at submission.}
+\end{document}

@@ -1,0 +1,239 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{xurl}
+\usepackage{xcolor}
+\usepackage{float}
+
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue}
+
+\newcommand{\ma}{Ahmad Nawaz}
+\newcommand{\mb}{Anamta Akmal}
+\newcommand{\mc}{Jagtar Singh}
+\newcommand{\id}[1]{\texttt{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Mini API Gateway (MAG)}
+\rhead{SE431 -- Milestone 2}
+\rfoot{Page \thepage}
+\setlength{\headheight}{14pt}
+
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.5em}{}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+
+
+% M2 evidence placeholders should be replaced only with verified facts.
+\newcommand{\todo}[1]{\textcolor{red!70!black}{\textbf{[TO COMPLETE: #1]}}}
+\newcommand{\evidence}[1]{\texttt{#1}}
+
+\begin{document}
+\begin{titlepage}\centering
+\IfFileExists{Giki Logo.png}{\includegraphics[width=0.3\textwidth]{Giki Logo.png}}{\mbox{}}\\[0.8cm]
+{\large\bfseries GHULAM ISHAQ KHAN INSTITUTE\\OF ENGINEERING SCIENCES AND TECHNOLOGY}\\[0.2cm]
+Faculty of Computer Science and Engineering\\[0.8cm]
+SE431 -- Software Quality Assurance\\[0.5cm]
+{\LARGE\bfseries Milestone 2: Inspection, V\&V and Test-Design Baseline}\\[0.4cm]
+{\Large\bfseries Mini API Gateway (MAG)\\[2pt]\normalsize A Lightweight, Resilient Reverse Proxy}\\[1cm]
+Instructor: Dr.\ Mian Muaz Razaq\\[0.8cm]
+{\bfseries Team roster}\\[0.3cm]
+\begin{tabular}{lll}\toprule
+\textbf{Name} & \textbf{Reg. No.} & \textbf{Email}\\\midrule
+\ma & 2023085 & u2023085@giki.edu.pk\\
+\mb & 2023113 & u2023113@giki.edu.pk\\
+\mc & 2023266 & u2023266@giki.edu.pk\\\bottomrule
+\end{tabular}\\[0.6cm]
+Repository: \url{https://github.com/jagtar5/MiniApiGateway}\\[0.3cm]
+Date: \todo{submission date}
+\end{titlepage}
+\tableofcontents
+\newpage
+
+\section{Scope, Ownership and M2 Rubric Coverage}
+This is the Milestone~2 quality evidence report for the MAG implementation. The assessment covers five modules: M-A Proxy Pipeline, M-B Identity \& Traffic Control, M-C Fast-Path Cache, M-D Resilience Engine and M-E Configuration \& Admin. Requirement identifiers are inherited from the SE431 Milestone~1 RTM; M2 test and defect links must refer to the actual source revision \todo{commit hash / baseline tag}.
+\begin{longtable}{L{6.1cm} L{1.7cm} L{5.4cm}}\toprule
+\textbf{SE431 M2 criterion} & \textbf{Weight} & \textbf{Evidence location}\\\midrule\endhead
+Fagan-style inspection & 20\% & Section~\ref{sec:inspection}\\
+Static analysis & 15\% & Section~\ref{sec:static}\\
+IEEE 1012 V\&V plan & 15\% & Section~\ref{sec:vv}\\
+Black-box test design (EP and BVA) & 15\% & Section~\ref{sec:blackbox}\\
+White-box test design (CFG, CC, basis paths) & 15\% & Section~\ref{sec:whitebox}\\
+SCM quality gates / baseline & 10\% & Section~\ref{sec:scm}\\
+RTM, risk and CAPA update & 10\% & Section~\ref{sec:rtm}\\\bottomrule
+\end{longtable}
+\begin{longtable}{L{5.1cm} L{3cm} L{4.9cm}}\toprule
+\textbf{Deliverable} & \textbf{Lead} & \textbf{Review / independent participation}\\\midrule\endhead
+Fagan inspection + black-box design & \mb & \ma, \mc; external inspector \\
+Static analysis + white-box + SCM & \mc & \ma, \mb\\
+V\&V plan + RTM v2 + risk & \ma & \mb, \mc\\\bottomrule\end{longtable}
+
+\section{Formal Fagan-Style Inspection (20\%)}\label{sec:inspection}
+\subsection{Scope and Participants}
+\textbf{Inspected artifacts:} \todo{actual rate limiter and circuit breaker files / commit hashes}.\\
+\textbf{Meeting date and duration:} \todo{actual date/time}.\\
+\begin{longtable}{L{3.8cm} L{4.7cm} L{4cm}}\toprule
+\textbf{Role} & \textbf{Participant} & \textbf{Evidence}\\\midrule\endhead
+Moderator & \todo{name} & \todo{attendance/meeting notes}\\
+Author(s) & \todo{actual code author(s)} & \todo{commit links}\\
+Reader(s)/inspector(s) & \todo{team participants} & \todo{inspection notes}\\
+External inspector (other team) & \todo{name, team, participation} & \todo{acknowledgment}\\
+Recorder & \todo{name} & \todo{defect log}\\\bottomrule\end{longtable}
+\textbf{Entry criteria:} \todo{build and test status, availability of reviewed source and checklist}.\\
+\textbf{Process:} \todo{preparation, meeting, defect recording, rework and follow-up with actual dates}.
+\subsection{Inspection Checklist}
+\begin{longtable}{L{2cm} L{8.5cm} L{2.5cm}}\toprule
+\textbf{Check ID} & \textbf{Inspection question} & \textbf{Outcome / note}\\\midrule\endhead
+IN-01 & Are rate-limiter check-and-update operations atomic under concurrency? & \todo{result}\\
+IN-02 & Are circuit transitions correct for closed/open/half-open states? & \todo{result}\\
+IN-03 & Is failure threshold/timeout behavior deterministic and testable? & \todo{result}\\
+IN-04 & Are exceptions appropriate and sensitive values absent from logs? & \todo{result}\\
+IN-05 & Are relevant tests and requirement IDs linked to inspected code? & \todo{result}\\\bottomrule\end{longtable}
+\subsection{Defect Log and Corrective Actions (CAPA)}
+\begin{longtable}{L{1.2cm} L{2.6cm} L{2.5cm} L{1.6cm} L{2.5cm} L{2cm}}\toprule
+\textbf{ID} & \textbf{File:line} & \textbf{Finding} & \textbf{Severity} & \textbf{Issue / fix commit} & \textbf{State}\\\midrule\endhead
+\todo{D-01} & \todo{source} & \todo{observed defect} & \todo{level} & \todo{links} & \todo{state}\\\bottomrule\end{longtable}
+\textbf{Inspection summary:} \todo{lines inspected, real defect counts by severity, meeting duration, reinspection outcome}. Do not invent findings.
+
+\section{Static Analysis Report (15\%)}\label{sec:static}
+Run a genuine source-analysis tool against the submitted code. The M2 plan specifies SpotBugs and Checkstyle.\par
+\begin{longtable}{L{3cm} L{2.2cm} L{2.7cm} L{4.4cm}}\toprule
+\textbf{Tool} & \textbf{Version} & \textbf{Findings count} & \textbf{Actual report path / command}\\\midrule\endhead
+SpotBugs & \todo{version} & \todo{count} & \todo{report location}\\
+Checkstyle & \todo{version} & \todo{count} & \todo{report location}\\\bottomrule\end{longtable}
+\begin{longtable}{L{1.7cm} L{3.9cm} L{2.2cm} L{4.7cm}}\toprule
+\textbf{Finding ID} & \textbf{Issue and location} & \textbf{Disposition} & \textbf{Fix commit or justification}\\\midrule\endhead
+\todo{ID} & \todo{tool output} & \todo{fixed/deferred/false positive} & \todo{evidence}\\\bottomrule\end{longtable}
+\textbf{Major findings disposition:} \todo{confirm actual major results and corrected issues}.\\
+\textbf{Static analysis limitations:} \todo{note checks not run or unresolved items}.
+
+\section{Verification and Validation Plan (IEEE 1012) (15\%)}\label{sec:vv}
+\textbf{Purpose and scope:} Verify that modules M-A through M-E conform to requirements, and validate that the integrated gateway behaves as intended in representative user scenarios. Verification asks whether the implementation meets specified requirements; validation asks whether the resulting system serves the intended needs.
+\begin{longtable}{L{3.2cm} L{1.0cm} L{2.4cm} L{2.2cm} L{1.3cm} L{2.1cm}}\toprule
+\textbf{Activity} & \textbf{V/V} & \textbf{Requirements} & \textbf{Method} & \textbf{When} & \textbf{Owner / proof}\\\midrule\endhead
+JWT and error mapper checks & Ver. & FR-04, QR-05 & JUnit + review & M2 & \todo{proof}\\
+Rate-limit behavior & Ver. & FR-02, QR-01 & BVA + stress & M2 & \todo{proof}\\
+Cache eligibility and isolation & Ver. & FR-03, QR-06 & EP + unit tests & M2 & \todo{proof}\\
+Breaker resilience & Ver. & QR-02, QR-03 & State/path tests & M2 & \todo{proof}\\
+Config and admin behavior & Ver. & QR-04, QR-07, QR-13 & Integration tests & M2 & \todo{proof}\\
+Gateway end-to-end route demo & Val. & FR-01, QR-12 & User scenario & M2/M3 & \todo{proof}\\
+Latency and memory targets & Ver. & QR-08, QR-09 & k6/soak test & M3 & \todo{plan}\\
+Coverage and extension proof & Ver. & QR-10, QR-11 & JaCoCo/OCP test & M2/M3 & \todo{proof}\\\bottomrule\end{longtable}
+\textbf{ID notation:} FR-xx / QR-xx above abbreviates MAG-FR-xx / MAG-QR-xx. Confirm every requirement is covered in RTM v2.\\
+\textbf{Acceptance / exit conditions:} \todo{actual M2 quality gates and M3 pending activities}.
+
+\section{Black-Box Test Design: EP and BVA (15\%)}\label{sec:blackbox}
+Derived cases below are templates: replace test method references and execution results with real M2 evidence. EP denotes equivalence partitioning and BVA denotes boundary value analysis.
+\begin{longtable}{L{1.4cm} L{1.8cm} L{4.1cm} L{3.4cm} L{2.3cm}}\toprule
+\textbf{Test ID} & \textbf{Req. ID} & \textbf{Partition/boundary input} & \textbf{Expected output} & \textbf{JUnit / status}\\\midrule\endhead
+BB-01 & QR-05 & Valid signed JWT (EP) & Request accepted & \todo{method}\\
+BB-02 & QR-05 & Expired JWT (EP) & 401 & \todo{method}\\
+BB-03 & QR-05 & Bad signature (EP) & 401 & \todo{method}\\
+BB-04 & QR-05 & Malformed JWT (EP) & 401 & \todo{method}\\
+BB-05 & QR-05 & Missing JWT (EP) & 401 & \todo{method}\\
+BB-06 & QR-05 & \texttt{alg=none} JWT (EP) & 401 & \todo{method}\\
+BB-07 & FR-02 & $N-1$ requests (BVA) & Allowed & \todo{method}\\
+BB-08 & FR-02 & $N$ requests (BVA) & Allowed & \todo{method}\\
+BB-09 & FR-02 & $N+1$ requests (BVA) & 429 + Retry-After & \todo{method}\\
+BB-10 & FR-03 & GET/200 (EP) & May be cached & \todo{method}\\
+BB-11 & FR-03 & GET/non-200 (EP) & Not cached & \todo{method}\\
+BB-12 & FR-03 & Non-GET/200 (EP) & Not cached & \todo{method}\\
+BB-13 & FR-03 & TTL just before / after expiry (BVA) & Hit / miss & \todo{method}\\
+BB-14 & QR-13 & Missing required admin field (EP) & Specific 4xx error & \todo{method}\\
+BB-15 & QR-13 & Negative limit/TTL (EP/BVA) & Specific 4xx error & \todo{method}\\
+BB-16 & QR-03 & Timeout boundary / just after (BVA) & Conformant timeout & \todo{method}\\\bottomrule\end{longtable}
+\textbf{Traceability:} Link each BB-xx to its full MAG requirement ID in Section~\ref{sec:rtm}. \\ \textbf{Observed execution status:} \todo{identify which cases were executed and actual outcomes; test design is not itself proof of a passing test}.
+
+\section{White-Box Test Design: CFG, Complexity and Basis Paths (15\%)}\label{sec:whitebox}
+Analyze the \emph{actual implementation} of \texttt{RateLimitFilter.doFilter()}, \texttt{CircuitBreaker.allowRequest()} and \texttt{CachingUpstreamClient.execute()}. The CFG nodes/edges below must be completed after code is stabilized; do not assume a proposed graph equals implemented control flow.
+\subsection{CFG Inventory and Cyclomatic Complexity}
+For a connected CFG, $V(G) = E-N+2$; more generally $V(G) = E-N+2P$, where $P$ is the number of connected components.
+\begin{longtable}{L{4.6cm} L{1.5cm} L{1.5cm} L{1.5cm} L{3.3cm}}\toprule
+\textbf{Method} & \textbf{Nodes} & \textbf{Edges} & $V(G)$ & \textbf{CFG diagram reference}\\\midrule\endhead
+\texttt{RateLimitFilter.doFilter} & \todo{N} & \todo{E} & \todo{V} & \todo{figure/link}\\
+\texttt{CircuitBreaker.allowRequest} & \todo{N} & \todo{E} & \todo{V} & \todo{figure/link}\\
+\texttt{CachingUpstreamClient.execute} & \todo{N} & \todo{E} & \todo{V} & \todo{figure/link}\\\bottomrule\end{longtable}
+\subsection{Basis Path Test Mapping}
+\begin{longtable}{L{1.4cm} L{2.4cm} L{4.6cm} L{2.8cm} L{2cm}}\toprule
+\textbf{Path ID} & \textbf{Method} & \textbf{Independent branch/path and trigger} & \textbf{Expected outcome} & \textbf{JUnit / RTM}\\\midrule\endhead
+WB-01 & RateLimitFilter & \todo{nodes and condition} & \todo{result} & \todo{links}\\
+WB-02 & CircuitBreaker & \todo{nodes and condition} & \todo{result} & \todo{links}\\
+WB-03 & CachingUpstreamClient & \todo{nodes and condition} & \todo{result} & \todo{links}\\\bottomrule\end{longtable}
+\textbf{CFG figures:} \todo{insert \texttt{\\includegraphics} of actual CFGs or TikZ diagrams and caption each}.\\
+\textbf{Basis set completeness:} \todo{at least V(G) independent paths per selected connected method, each tied to actual JUnit test}.
+
+\section{SCM Quality-Gate Evidence (10\%)}\label{sec:scm}
+\begin{longtable}{L{3.4cm} L{4.1cm} L{5.5cm}}\toprule
+\textbf{SCM item} & \textbf{Policy from M1/M2 plan} & \textbf{Observed M2 repository evidence}\\\midrule\endhead
+Feature branches & Owner-specific work and integration branch & \todo{branch and PR links}\\
+Review before merge & Non-author reviewer & \todo{review approvals}\\
+Quality gates & Build, tests, analysis in CI & \todo{run URLs and statuses}\\
+Commit trail & \texttt{test:}, \texttt{feat:}, \texttt{refactor:} & \todo{actual commit sequence}\\
+Merge strategy & Preserve TDD history; avoid squash & \todo{GitHub settings / PR proof}\\
+Milestone baseline & Annotated \texttt{m2-baseline} tag & \todo{tag SHA and reproduction steps}\\
+Contribution attribution & Three members' meaningful participation & \todo{commit/review samples}\\\bottomrule\end{longtable}
+\textbf{Deviations and corrective actions:} \todo{real repository controls not achieved or exceptions, with risks}.
+
+\section{RTM v2, Risk Register and CAPA Update (10\%)}\label{sec:rtm}
+\subsection{Requirements Traceability Matrix v2}
+Preserve all 17 requirement IDs from M1. Use \emph{Implemented / Partial / Not started}, precise test IDs and verifiable links. A planned test is not an executed test.
+\begin{longtable}{L{2.25cm} L{1.3cm} L{2cm} L{2.9cm} L{3.2cm}}\toprule
+\textbf{Req. ID} & \textbf{Module} & \textbf{M2 status} & \textbf{BB/WB/JUnit test IDs} & \textbf{Coverage / build evidence}\\\midrule\endhead
+\id{MAG-FR-01} & M-A & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-FR-02} & M-B & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-FR-03} & M-C & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-FR-04} & M-A & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-01} & M-B & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-02} & M-D & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-03} & M-A/M-D & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-04} & M-E & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-05} & M-B & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-06} & M-C & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-07} & M-E & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-08} & All & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-09} & M-B/M-C & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-10} & All & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-11} & M-B & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-12} & M-A & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-13} & M-E & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\bottomrule\end{longtable}
+\subsection{Risk Register Update}
+Update the risks recorded in the M1 document, including the hard dependency on an inspector from another team. Preserve original risk IDs R1--R7 and their original descriptions when transcribing.
+\begin{longtable}{L{1.1cm} L{3.5cm} L{2.1cm} L{2.4cm} L{3.5cm}}\toprule
+\textbf{ID} & \textbf{Risk / original owner} & \textbf{P / I / priority} & \textbf{Status} & \textbf{Mitigation evidence / residual risk}\\\midrule\endhead
+R1 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
+R2 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
+R3 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
+R4 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
+R5 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
+R6 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
+R7 & External inspector coordination & \todo{values} & \todo{status} & \todo{evidence}\\\bottomrule\end{longtable}
+\subsection{Defect and CAPA Status}
+\todo{Summarize inspection and static-analysis findings by actual issue ID, severity, owner, due date, status and evidence of closure or justified deferral}. Link to the inspection log in Section~\ref{sec:inspection}.
+
+\section{Verification Evidence and Submission Index}
+\begin{longtable}{L{5.1cm} L{7.6cm}}\toprule
+\textbf{Required artifact} & \textbf{Path / verified link / inclusion status}\\\midrule\endhead
+Inspection checklist, attendance, defect/CAPA log & \todo{path}\\
+SpotBugs/Checkstyle reports & \todo{path}\\
+IEEE 1012 V\&V plan & \todo{path or this report}\\
+Black-box test cases & \todo{path or this report}\\
+CFGs, cyclomatic complexity and basis paths & \todo{figures/test IDs}\\
+SCM, CI and M2 baseline evidence & \todo{links}\\
+RTM v2, risk register, CAPA status & \todo{path or sections}\\
+AI Usage Log (separately maintained) & \todo{path / entries}\\\bottomrule\end{longtable}
+\section*{Conclusion}
+\todo{Report verified M2 quality outcomes, unresolved defects, coverage limitations and M3 priorities.}
+\end{document}
