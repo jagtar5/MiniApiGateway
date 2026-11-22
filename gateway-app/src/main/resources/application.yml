@@ -33,7 +33,7 @@ management:
 mag:
   jwt:
     # TODO M2: set via environment variable or Vault — never commit the real secret
-    secret: ${MAG_JWT_SECRET:change-me-before-production}
+    secret: ${MAG_JWT_SECRET:change-me-before-production-use-a-32-byte-minimum}
   admin:
     # TODO M2: protect admin endpoints with this credential
     credential: ${MAG_ADMIN_CREDENTIAL:change-me-before-production}

@@ -1,5 +1,7 @@
 package com.mag.core.config;
 
+import com.mag.core.exception.InvalidConfigurationException;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -21,10 +23,16 @@ public final class RouteConfig {
     private final int priority;
 
     private RouteConfig(Builder builder) {
-        this.id = Objects.requireNonNull(builder.id, "id");
-        this.pathPattern = Objects.requireNonNull(builder.pathPattern, "pathPattern");
-        this.upstreamUrls = List.copyOf(builder.upstreamUrls);
-        this.methods = List.copyOf(builder.methods);
+        this.id = required(builder.id, "id");
+        this.pathPattern = required(builder.pathPattern, "pathPattern");
+        if (!pathPattern.startsWith("/")) {
+            throw new InvalidConfigurationException("pathPattern", "must start with '/'");
+        }
+        this.upstreamUrls = copyList(builder.upstreamUrls, "upstreamUrls");
+        this.methods = copyList(builder.methods, "methods");
+        if (builder.cacheTtlSeconds < 0) {
+            throw new InvalidConfigurationException("cacheTtlSeconds", "must not be negative");
+        }
         this.authRequired = builder.authRequired;
         this.cacheEnabled = builder.cacheEnabled;
         this.cacheTtlSeconds = builder.cacheTtlSeconds;
@@ -39,6 +47,20 @@ public final class RouteConfig {
     public boolean isCacheEnabled() { return cacheEnabled; }
     public long getCacheTtlSeconds() { return cacheTtlSeconds; }
     public int getPriority() { return priority; }
+
+    private static String required(String value, String fieldName) {
+        if (value == null || value.isBlank()) {
+            throw new InvalidConfigurationException(fieldName, "must not be blank");
+        }
+        return value;
+    }
+
+    private static List<String> copyList(List<String> values, String fieldName) {
+        if (values == null || values.stream().anyMatch(Objects::isNull)) {
+            throw new InvalidConfigurationException(fieldName, "must not be null or contain null values");
+        }
+        return List.copyOf(values);
+    }
 
     public static Builder builder() { return new Builder(); }
 

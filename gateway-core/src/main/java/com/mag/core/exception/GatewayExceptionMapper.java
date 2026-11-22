@@ -25,10 +25,21 @@ public final class GatewayExceptionMapper {
         if (ex instanceof RateLimitExceededException rle) {
             return GatewayResponse.tooManyRequests(rle.getRetryAfterSeconds());
         }
-        // All other subclasses carry their status code directly.
         return GatewayResponse.builder()
                 .statusCode(ex.getHttpStatus())
-                .body(ex.getMessage())
+                .body(ex.getHttpStatus() + " " + statusText(ex.getHttpStatus()) + ": " + ex.getMessage())
                 .build();
+    }
+
+    private static String statusText(int status) {
+        return switch (status) {
+            case 400 -> "Bad Request";
+            case 401 -> "Unauthorized";
+            case 403 -> "Forbidden";
+            case 502 -> "Bad Gateway";
+            case 503 -> "Service Unavailable";
+            case 504 -> "Gateway Timeout";
+            default -> "Gateway Error";
+        };
     }
 }

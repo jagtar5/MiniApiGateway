@@ -30,9 +30,15 @@ public class HttpUpstreamClient implements UpstreamClient {
 
     @Override
     public UpstreamResponse execute(GatewayRequest request) {
-        // TODO M2: build HTTP request from GatewayRequest, apply timeouts,
-        //          forward X-Request-Id header, return UpstreamResponse.
-        //          Throw UpstreamTimeoutException on timeout, UpstreamUnavailableException on error.
-        throw new UnsupportedOperationException("HttpUpstreamClient.execute — implement in M2");
+        Objects.requireNonNull(request, "request must not be null");
+
+        // P0-1 interface lock: this core skeleton is intentionally not a real
+        // network implementation. A 501 response keeps callers deterministic
+        // until P1-1 replaces it with the real HTTP implementation.
+        return UpstreamResponse.builder()
+                .statusCode(501)
+                .header("Content-Type", "text/plain")
+                .body("Not Implemented")
+                .build();
     }
 }

@@ -1,6 +1,5 @@
 package com.mag.core.config;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,16 +13,23 @@ import java.util.Objects;
  * Thread-safety: all fields are final; collections are unmodifiable.
  * The shell swaps the {@code AtomicReference} to this new object atomically.
  */
-public final class ConfigSnapshot {
+public record ConfigSnapshot(long version, List<RouteConfig> routes) {
 
-    private final long version;
-    private final List<RouteConfig> routes;
-
-    public ConfigSnapshot(long version, List<RouteConfig> routes) {
-        this.version = version;
-        this.routes = Collections.unmodifiableList(Objects.requireNonNull(routes));
+    /**
+     * Defensive copy at the boundary keeps the snapshot immutable even if a
+     * caller reuses or mutates a source list after publication (DIP/SRP).
+     */
+    public ConfigSnapshot {
+        Objects.requireNonNull(routes, "routes must not be null");
+        routes = List.copyOf(routes);
     }
 
-    public long getVersion() { return version; }
-    public List<RouteConfig> getRoutes() { return routes; }
+    // Compatibility accessors for the Spring shell.
+    public long getVersion() {
+        return version;
+    }
+
+    public List<RouteConfig> getRoutes() {
+        return routes;
+    }
 }
