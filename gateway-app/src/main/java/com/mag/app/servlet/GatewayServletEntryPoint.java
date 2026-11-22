@@ -3,15 +3,17 @@ package com.mag.app.servlet;
 import com.mag.app.config.AtomicConfigStore;
 import com.mag.app.metrics.GatewayMetrics;
 import com.mag.core.config.RouteConfig;
-import com.mag.core.exception.CircuitOpenException;
+import com.mag.core.auth.TokenVerifier;
 import com.mag.core.exception.GatewayException;
 import com.mag.core.exception.GatewayExceptionMapper;
-import com.mag.core.exception.UpstreamTimeoutException;
-import com.mag.core.exception.UpstreamUnavailableException;
+import com.mag.core.filter.GatewayContext;
+import com.mag.core.filter.PipelineBuilder;
+import com.mag.core.filter.impl.AuthFilter;
+import com.mag.core.filter.impl.ForwardFilter;
+import com.mag.core.filter.impl.RequestIdFilter;
 import com.mag.core.model.GatewayRequest;
 import com.mag.core.model.GatewayResponse;
 import com.mag.core.upstream.UpstreamClient;
-import com.mag.core.upstream.UpstreamResponse;
 import com.mag.core.upstream.impl.CachingUpstreamClient;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,9 +31,8 @@ import java.util.UUID;
  * Responsibilities:
  *   1. Converts HttpServletRequest → GatewayRequest.
  *   2. Routes request matching active ConfigSnapshot.
- *   3. Enforces basic auth check if route.isAuthRequired() (scaffolding until M-B AuthFilter merges).
- *   4. Executes via CachingUpstreamClient → ResilientUpstreamClient → SimpleHttpUpstreamClient.
- *   5. Updates live GatewayMetrics and writes response back.
+ *   3. Builds the request-ID, authentication and forwarding filter pipeline.
+ *   4. Updates live GatewayMetrics and writes response back.
  */
 @Controller
 @RequestMapping({"/api/**", "/gateway/**"})
@@ -42,14 +43,17 @@ public class GatewayServletEntryPoint {
     private final UpstreamClient upstreamClient;
     private final AtomicConfigStore configStore;
     private final GatewayMetrics metrics;
+    private final TokenVerifier tokenVerifier;
 
     public GatewayServletEntryPoint(
             @org.springframework.beans.factory.annotation.Qualifier("upstreamClient") UpstreamClient upstreamClient,
             AtomicConfigStore configStore,
-            GatewayMetrics metrics) {
+            GatewayMetrics metrics,
+            TokenVerifier tokenVerifier) {
         this.upstreamClient = upstreamClient;
         this.configStore = configStore;
         this.metrics = metrics;
+        this.tokenVerifier = tokenVerifier;
     }
 
     @RequestMapping
@@ -64,19 +68,12 @@ public class GatewayServletEntryPoint {
 
         // Headers
         Enumeration<String> headerNames = httpRequest.getHeaderNames();
-        boolean hasRequestId = false;
         if (headerNames != null) {
             while (headerNames.hasMoreElements()) {
                 String name = headerNames.nextElement();
                 String value = httpRequest.getHeader(name);
                 reqBuilder.header(name, value);
-                if (HEADER_REQUEST_ID.equalsIgnoreCase(name)) {
-                    hasRequestId = true;
-                }
             }
-        }
-        if (!hasRequestId) {
-            reqBuilder.header(HEADER_REQUEST_ID, UUID.randomUUID().toString());
         }
 
         // Query parameters
@@ -92,23 +89,13 @@ public class GatewayServletEntryPoint {
         RouteConfig matchingRoute = findMatchingRoute(path, method);
         if (matchingRoute == null) {
             httpResponse.setStatus(404);
+            httpResponse.setHeader(HEADER_REQUEST_ID, UUID.randomUUID().toString());
             httpResponse.getWriter().write("{\"error\": \"404 Not Found: No matching route for " + path + "\"}");
             return;
         }
 
-        // 3. Auth requirement check
-        if (matchingRoute.isAuthRequired()) {
-            String authHeader = httpRequest.getHeader("Authorization");
-            if (authHeader == null || authHeader.isBlank()) {
-                metrics.recordBlocked();
-                httpResponse.setStatus(401);
-                httpResponse.setHeader("Content-Type", "application/json");
-                httpResponse.getWriter().write("{\"error\": \"401 Unauthorized: Bearer JWT token required\"}");
-                return;
-            }
-        }
-
-        // 4. Execute through decorator chain (Caching -> Resilient -> Upstream)
+        // 3. Execute through the Chain of Responsibility (request ID → optional auth → forwarding).
+        GatewayContext context = new GatewayContext(gatewayRequest);
         try {
             boolean wasCached = false;
             if (upstreamClient instanceof CachingUpstreamClient cachingClient) {
@@ -120,7 +107,17 @@ public class GatewayServletEntryPoint {
                 }
             }
 
-            UpstreamResponse upstreamResponse = upstreamClient.execute(gatewayRequest);
+            new PipelineBuilder(matchingRoute)
+                    .withRequestId(new RequestIdFilter())
+                    .withAuth(new AuthFilter(tokenVerifier))
+                    .withForward(new ForwardFilter(upstreamClient))
+                    .build()
+                    .proceed(context);
+
+            GatewayResponse response = context.getResponse();
+            if (response == null) {
+                throw new IllegalStateException("Gateway pipeline completed without a response");
+            }
 
             if (wasCached) {
                 metrics.recordCacheHit();
@@ -129,38 +126,26 @@ public class GatewayServletEntryPoint {
                 metrics.recordAllowed();
             }
 
-            // Write response
-            httpResponse.setStatus(upstreamResponse.getStatusCode());
-            for (Map.Entry<String, String> header : upstreamResponse.getHeaders().entrySet()) {
-                httpResponse.setHeader(header.getKey(), header.getValue());
-            }
-            httpResponse.getWriter().write(upstreamResponse.getBody());
-
-        } catch (CircuitOpenException coe) {
-            metrics.recordBlocked();
-            httpResponse.setStatus(503);
-            httpResponse.setHeader("Content-Type", "application/json");
-            httpResponse.getWriter().write("{\"error\": \"503 Service Unavailable: Circuit breaker is OPEN (Fail-fast)\"}");
-        } catch (UpstreamTimeoutException ute) {
-            metrics.recordBlocked();
-            httpResponse.setStatus(504);
-            httpResponse.setHeader("Content-Type", "application/json");
-            httpResponse.getWriter().write("{\"error\": \"504 Gateway Timeout: " + ute.getMessage() + "\"}");
-        } catch (UpstreamUnavailableException uue) {
-            metrics.recordBlocked();
-            httpResponse.setStatus(502);
-            httpResponse.setHeader("Content-Type", "application/json");
-            httpResponse.getWriter().write("{\"error\": \"502 Bad Gateway: " + uue.getMessage() + "\"}");
+            writeResponse(httpResponse, response, context.getAttribute(RequestIdFilter.HEADER_REQUEST_ID));
         } catch (GatewayException ge) {
             metrics.recordBlocked();
-            GatewayResponse gr = GatewayExceptionMapper.toResponse(ge);
-            httpResponse.setStatus(gr.getStatusCode());
-            httpResponse.getWriter().write(gr.getBody());
-        } catch (Exception e) {
-            metrics.recordBlocked();
-            httpResponse.setStatus(500);
-            httpResponse.getWriter().write("{\"error\": \"500 Internal Server Error: " + e.getMessage() + "\"}");
+            writeResponse(
+                    httpResponse,
+                    GatewayExceptionMapper.toResponse(ge),
+                    context.getAttribute(RequestIdFilter.HEADER_REQUEST_ID));
         }
+    }
+
+    private void writeResponse(HttpServletResponse httpResponse, GatewayResponse response, String requestId)
+            throws IOException {
+        httpResponse.setStatus(response.getStatusCode());
+        for (Map.Entry<String, String> header : response.getHeaders().entrySet()) {
+            httpResponse.setHeader(header.getKey(), header.getValue());
+        }
+        if (requestId != null) {
+            httpResponse.setHeader(HEADER_REQUEST_ID, requestId);
+        }
+        httpResponse.getWriter().write(response.getBody());
     }
 
     private RouteConfig findMatchingRoute(String path, String method) {

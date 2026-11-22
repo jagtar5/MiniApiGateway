@@ -1,0 +1,141 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{xurl}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+\newcommand{\ma}{Ahmad Nawaz}
+\newcommand{\mb}{Anamta Akmal}
+\newcommand{\mc}{Jagtar Singh}
+\newcommand{\placeholder}[1]{\textit{[\,#1\,]}}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Mini API Gateway (MAG)}
+\rhead{M2 -- AI Usage Log}
+\rfoot{Page \thepage}
+\setlength{\headheight}{14pt}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.5em}{}
+\renewcommand{\arraystretch}{1.2}
+
+% Copy the entry block within the correct member's section for each significant AI use.
+% Replace placeholders with ACTUAL information; do not invent tool versions, modifications or verification.
+\newcommand{\ailogentry}[9]{%
+\subsection*{Entry #1 -- #2}
+\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
+\item[Date] #3
+\item[Module / Deliverable] #4
+\item[Tool and Model Version] #5
+\item[Purpose] #6
+\item[Prompt / Activity Summary] #7
+\item[Material Adopted] #8
+\item[Modifications and Verification] #9
+\end{description}
+}
+
+\begin{document}
+\begin{titlepage}
+\centering
+% If available, uncomment and upload the same logo used in M1:
+% \includegraphics[width=0.3\textwidth]{Giki Logo.png}\\[0.8cm]
+{\large\bfseries GHULAM ISHAQ KHAN INSTITUTE\\OF ENGINEERING SCIENCES AND TECHNOLOGY}\\[0.3cm]
+Faculty of Computer Science and Engineering\\[0.9cm]
+SE423 -- Software Construction and Development\\
+SE431 -- Software Quality Assurance\\[0.6cm]
+{\LARGE\bfseries Milestone 2 -- AI Usage Log}\\[0.5cm]
+{\Large\bfseries Mini API Gateway (MAG)}\\[0.2cm]
+A Lightweight, Resilient Reverse Proxy\\[1cm]
+{\bfseries Team Roster}\\[0.3cm]
+\begin{tabular}{ll}
+\toprule
+\textbf{Member} & \textbf{Registration Number}\\
+\midrule
+\ma & 2023085\\
+\mb & 2023113\\
+\mc & 2023266\\
+\bottomrule
+\end{tabular}\\[0.8cm]
+Repository: \url{https://github.com/jagtar5/MiniApiGateway}\\[0.4cm]
+Submission date: \placeholder{Date}
+\end{titlepage}
+
+\section{Purpose and Logging Instructions}
+This document records significant AI-assisted work for Milestone 2 of the Mini API Gateway project. Each team member maintains \textbf{only their own section}. Entries must accurately describe what was requested, adopted, modified, and independently verified. Preserve Milestone 1 entries in the existing project log; this document contains \textbf{Milestone 2 entries only}.
+
+\begin{itemize}[leftmargin=*]
+\item Add one entry for each significant AI-assisted coding, testing, analysis, or documentation activity.
+\item Use a unique identifier such as \texttt{M2-AN-01}, \texttt{M2-AA-01}, or \texttt{M2-JS-01}.
+\item Include the actual AI tool and model version, not a guessed version.
+\item State the precise files or text adopted, any human modifications, and real verification evidence (tests, review, CI links, etc.).
+\item If an AI output was rejected, record that fact where significant; do not claim it was adopted.
+\item Do not overwrite another member's entries. Resolve simultaneous edits through separate branches or non-overlapping sections.
+\end{itemize}
+
+% ================================================================
+% MEMBER 1: Ahmad Nawaz -- EDIT ONLY THIS SECTION
+% ================================================================
+\section{Ahmad Nawaz (2023085) -- Milestone 2 AI Usage}
+\textbf{Primary areas:} M-A Proxy Pipeline, shared interfaces, SOLID/TDD tests, CI and coverage, V\&V plan, RTM/risk updates, architecture documentation.
+
+\subsection*{Entry M2-AN-01 -- \placeholder{Activity Title}}
+\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
+\item[Date] 22 November 2026
+\item[Module / Deliverable] P0-1 interface lock, \code{ConfigSnapshot}, \code{HttpUpstreamClient}, P0-1 contract tests, \code{docs/m2-interface-lock.md}
+\item[Tool and Model Version] GitHub Copilot (Copilot SDK in VS Code) + gpt-5.6-luna
+\item[Purpose] Complete the missing P0-1 configuration snapshot record and HTTP 501 skeleton while preserving existing contracts.
+\item[Prompt / Activity Summary] Implement P0-1 only with focused red tests, record conversion, 501 stub behavior, and SE423/SE431 evidence.
+\item[Material Adopted] \code{ConfigSnapshotTest}, \code{HttpUpstreamClientTest}, record implementation, 501 implementation, and interface-lock document.
+\item[Modifications Made] Retained existing interfaces; added compatibility accessors and a null-request guard. \placeholder{TODO(AN: confirm)}
+\item[Verification Performed] Red compilation failure for missing record accessors; focused 2-test green run; full \code{gateway-core} suite: 30 tests, 0 failures, 0 errors.
+\end{description}
+% Ahmad: duplicate the entry block above for M2-AN-02, M2-AN-03, etc.
+
+\clearpage
+% ================================================================
+% MEMBER 2: Anamta Akmal -- EDIT ONLY THIS SECTION
+% ================================================================
+\section{Anamta Akmal (2023113) -- Milestone 2 AI Usage}
+\textbf{Primary areas:} M-B Rate Limiting, M-E Configuration/Admin, concurrency testing, Fagan inspection, black-box test design, AI-log coordination.
+
+\subsection*{Entry M2-AA-01 -- \placeholder{Activity Title}}
+\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
+\item[Date] \placeholder{YYYY-MM-DD}
+\item[Module / Deliverable] \placeholder{Module, file(s), or report section}
+\item[Tool and Model Version] \placeholder{Tool name and exact model version}
+\item[Purpose] \placeholder{Why AI was used}
+\item[Prompt / Activity Summary] \placeholder{Concise summary of the actual request}
+\item[Material Adopted] \placeholder{Code, tests, analysis, or text actually retained}
+\item[Modifications Made] \placeholder{Human changes, corrections, or none}
+\item[Verification Performed] \placeholder{Actual test command/result, review, or evidence link}
+\end{description}
+% Anamta: duplicate the entry block above for M2-AA-02, M2-AA-03, etc.
+
+\clearpage
+% ================================================================
+% MEMBER 3: Jagtar Singh -- EDIT ONLY THIS SECTION
+% ================================================================
+\section{Jagtar Singh (2023266) -- Milestone 2 AI Usage}
+\textbf{Primary areas:} M-C Cache, M-D Circuit Breaker, integration/dashboard, static analysis, white-box test design, SCM and submission evidence.
+
+\subsection*{Entry M2-JS-01 -- \placeholder{Activity Title}}
+\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
+\item[Date] \placeholder{YYYY-MM-DD}
+\item[Module / Deliverable] \placeholder{Module, file(s), or report section}
+\item[Tool and Model Version] \placeholder{Tool name and exact model version}
+\item[Purpose] \placeholder{Why AI was used}
+\item[Prompt / Activity Summary] \placeholder{Concise summary of the actual request}
+\item[Material Adopted] \placeholder{Code, tests, analysis, or text actually retained}
+\item[Modifications Made] \placeholder{Human changes, corrections, or none}
+\item[Verification Performed] \placeholder{Actual test command/result, review, or evidence link}
+\end{description}
+% Jagtar: duplicate the entry block above for M2-JS-02, M2-JS-03, etc.
+
+\end{document}

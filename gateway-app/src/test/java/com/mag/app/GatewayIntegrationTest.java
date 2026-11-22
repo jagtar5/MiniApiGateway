@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.UUID;
 import java.util.List;
 import java.util.Map;
 
@@ -102,6 +103,7 @@ class GatewayIntegrationTest {
         ResponseEntity<String> response = restTemplate.getForEntity(getBaseUrl() + "/api/items/123", String.class);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertTrue(response.getBody().contains("401 Unauthorized"));
+        UUID.fromString(response.getHeaders().getFirst("X-Request-Id"));
     }
 
     @Test

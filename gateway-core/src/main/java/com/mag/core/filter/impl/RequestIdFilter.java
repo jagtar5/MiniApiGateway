@@ -19,8 +19,8 @@ public class RequestIdFilter implements GatewayFilter {
 
     @Override
     public void doFilter(GatewayContext ctx, FilterChain chain) {
-        // TODO M2: write a UUID into ctx attributes under HEADER_REQUEST_ID
-        //          so downstream filters and the ForwardFilter can attach it.
-        throw new UnsupportedOperationException("RequestIdFilter.doFilter — implement in M2");
+        String requestId = UUID.randomUUID().toString();
+        ctx.setAttribute(HEADER_REQUEST_ID, requestId);
+        chain.proceed(ctx);
     }
 }

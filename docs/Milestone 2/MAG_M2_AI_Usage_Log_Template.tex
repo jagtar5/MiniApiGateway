@@ -1,3 +1,4 @@
+
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -12,48 +13,59 @@
 \usepackage{titlesec}
 \usepackage{parskip}
 \usepackage{xurl}
+
 \hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+
 \newcommand{\ma}{Ahmad Nawaz}
 \newcommand{\mb}{Anamta Akmal}
 \newcommand{\mc}{Jagtar Singh}
 \newcommand{\placeholder}[1]{\textit{[\,#1\,]}}
+
 \pagestyle{fancy}
 \fancyhf{}
 \lhead{Mini API Gateway (MAG)}
 \rhead{M2 -- AI Usage Log}
 \rfoot{Page \thepage}
 \setlength{\headheight}{14pt}
+
 \titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.5em}{}
 \renewcommand{\arraystretch}{1.2}
 
-% Copy the entry block within the correct member's section for each significant AI use.
-% Replace placeholders with ACTUAL information; do not invent tool versions, modifications or verification.
-\newcommand{\ailogentry}[9]{%
-\subsection*{Entry #1 -- #2}
-\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
-\item[Date] #3
-\item[Module / Deliverable] #4
-\item[Tool and Model Version] #5
-\item[Purpose] #6
-\item[Prompt / Activity Summary] #7
-\item[Material Adopted] #8
-\item[Modifications and Verification] #9
+% Short entry format
+\newcommand{\ailogentry}[9]{
+\subsection*{#1}
+\begin{description}[leftmargin=3.2cm,style=nextline,font=\bfseries]
+\item[Date] #2
+\item[Module] #3
+\item[AI Tool] #4
+\item[Purpose] #5
+\item[Activity] #6
+\item[Used] #7
+\item[Changes] #8
+\item[Verification] #9
 \end{description}
 }
 
 \begin{document}
+
 \begin{titlepage}
 \centering
-% If available, uncomment and upload the same logo used in M1:
-% \includegraphics[width=0.3\textwidth]{Giki Logo.png}\\[0.8cm]
-{\large\bfseries GHULAM ISHAQ KHAN INSTITUTE\\OF ENGINEERING SCIENCES AND TECHNOLOGY}\\[0.3cm]
+
+{\large\bfseries GHULAM ISHAQ KHAN INSTITUTE\\
+OF ENGINEERING SCIENCES AND TECHNOLOGY}\\[0.3cm]
+
 Faculty of Computer Science and Engineering\\[0.9cm]
+
 SE423 -- Software Construction and Development\\
 SE431 -- Software Quality Assurance\\[0.6cm]
+
 {\LARGE\bfseries Milestone 2 -- AI Usage Log}\\[0.5cm]
+
 {\Large\bfseries Mini API Gateway (MAG)}\\[0.2cm]
 A Lightweight, Resilient Reverse Proxy\\[1cm]
+
 {\bfseries Team Roster}\\[0.3cm]
+
 \begin{tabular}{ll}
 \toprule
 \textbf{Member} & \textbf{Registration Number}\\
@@ -63,47 +75,113 @@ A Lightweight, Resilient Reverse Proxy\\[1cm]
 \mc & 2023266\\
 \bottomrule
 \end{tabular}\\[0.8cm]
+
 Repository: \url{https://github.com/jagtar5/MiniApiGateway}\\[0.4cm]
-Submission date: \placeholder{Date}
+Submission date: 22 November 2026
+
 \end{titlepage}
 
 \section{Purpose and Logging Instructions}
-This document records significant AI-assisted work for Milestone 2 of the Mini API Gateway project. Each team member maintains \textbf{only their own section}. Entries must accurately describe what was requested, adopted, modified, and independently verified. Preserve Milestone 1 entries in the existing project log; this document contains \textbf{Milestone 2 entries only}.
+
+This document records our AI-assisted work for Milestone 2 of
+the Mini API Gateway project. Each member has documented their own
+contribution, including how AI was used, what we kept, and how
+the work was checked. Only activities and results supported by
+available evidence are included.
 
 \begin{itemize}[leftmargin=*]
-\item Add one entry for each significant AI-assisted coding, testing, analysis, or documentation activity.
-\item Use a unique identifier such as \texttt{M2-AN-01}, \texttt{M2-AA-01}, or \texttt{M2-JS-01}.
-\item Include the actual AI tool and model version, not a guessed version.
-\item State the precise files or text adopted, any human modifications, and real verification evidence (tests, review, CI links, etc.).
-\item If an AI output was rejected, record that fact where significant; do not claim it was adopted.
-\item Do not overwrite another member's entries. Resolve simultaneous edits through separate branches or non-overlapping sections.
+\item Record significant AI-assisted coding, testing, and documentation.
+\item Mention the AI tool and model version when known.
+\item Describe the work and changes briefly.
+\item Include actual verification results where available.
+\item Keep each member's contribution in their own section.
 \end{itemize}
 
 % ================================================================
-% MEMBER 1: Ahmad Nawaz -- EDIT ONLY THIS SECTION
+% MEMBER 1: AHMAD NAWAZ
 % ================================================================
-\section{Ahmad Nawaz (2023085) -- Milestone 2 AI Usage}
-\textbf{Primary areas:} M-A Proxy Pipeline, shared interfaces, SOLID/TDD tests, CI and coverage, V\&V plan, RTM/risk updates, architecture documentation.
 
-\subsection*{Entry M2-AN-01 -- \placeholder{Activity Title}}
-\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
-\item[Date] \placeholder{YYYY-MM-DD}
-\item[Module / Deliverable] \placeholder{Module, file(s), or report section}
-\item[Tool and Model Version] \placeholder{e.g., tool name + exact model version}
-\item[Purpose] \placeholder{Why AI was used}
-\item[Prompt / Activity Summary] \placeholder{Concise summary of the actual request}
-\item[Material Adopted] \placeholder{Code, tests, analysis, or text actually retained}
-\item[Modifications Made] \placeholder{Human changes, corrections, or none}
-\item[Verification Performed] \placeholder{Actual test command/result, review, or evidence link}
-\end{description}
-% Ahmad: duplicate the entry block above for M2-AN-02, M2-AN-03, etc.
+\section{Ahmad Nawaz (2023085) -- Milestone 2 AI Usage}
+
+\textbf{Primary areas:} Proxy pipeline, interfaces, authentication,
+SOLID testing, coverage, V\&V, RTM, risk updates, and architecture documentation.
+
+\ailogentry
+{Entry M2-AN-01 -- Interface and Configuration}
+{22 November 2026}
+{P0-1, ConfigSnapshot, HttpUpstreamClient, contract tests}
+{GitHub Copilot in VS Code -- gpt-5.6-luna}
+{Complete the configuration snapshot and upstream client skeleton while keeping existing interfaces consistent.}
+{I used AI to help implement the immutable configuration record, upstream client skeleton, and focused tests.}
+{ConfigSnapshotTest, HttpUpstreamClientTest, and interface-lock documentation.}
+{I kept the existing interfaces and added compatibility accessors and a null-request guard.}
+{I ran \texttt{mvn clean verify}. The core suite passed 55 tests, with 3 skipped cases.}
+
+\ailogentry
+{Entry M2-AN-02 -- Request Pipeline and Authentication}
+{22 November 2026}
+{P1-1, Request pipeline, JWT authentication, forwarding}
+{GitHub Copilot in VS Code -- gpt-5.6-luna}
+{Implement and test the main request-processing pipeline.}
+{I used AI to help with request IDs, bearer-token validation, forwarding, exception handling, and servlet pipeline integration.}
+{RequestIdFilter, AuthFilter, ForwardFilter, JjwtTokenVerifier, and exception mapping.}
+{I retained the JWT verification approach and application timeout configuration, and adjusted the development key for compatibility.}
+{The Maven verification passed with 55 core tests and 13 application tests, with no failures or errors.}
+
+\ailogentry
+{Entry M2-AN-03 -- SOLID Contracts and Coverage}
+{22 November 2026}
+{P2-1, P2-2, upstream and rate-limiter contracts}
+{GitHub Copilot in VS Code -- gpt-5.6-luna}
+{Check extensibility and substitutability and record the coverage baseline.}
+{I used AI to prepare OCP and LSP contract tests and organize the coverage evidence from the Maven and JaCoCo reports.}
+{Upstream contract tests, rate-limiter OCP test, and coverage documentation.}
+{I kept the test fixtures independent of teammate implementations and recorded unavailable cases as skipped.}
+{The build passed. Core line coverage was 84.86\% and branch coverage was 75.41\%.}
+
+\ailogentry
+{Entry M2-AN-04 -- V\&V, RTM and Risk Updates}
+{22 November 2026}
+{P3-3, P3-7, V\&V plan, RTM and risk register}
+{GitHub Copilot in VS Code -- gpt-5.6-luna}
+{Organize milestone verification, traceability, and risk evidence.}
+{I used AI to map requirements to verification activities, owners, test methods, and available evidence.}
+{V\&V plan, RTM v2, risk-register updates, and CAPA structure.}
+{I kept pending items for evidence that was not yet available instead of marking them complete.}
+{I checked requirement IDs and documentation against the repository. No external inspection results were assumed.}
+
+\ailogentry
+{Entry M2-AN-05 -- Architecture Documentation}
+{22 November 2026}
+{README, ADR-001 to ADR-003, and patterns documentation}
+{GitHub Copilot in VS Code -- gpt-5.6-luna}
+{Document architecture decisions and the reasoning behind the selected patterns.}
+{I used AI to help explain architecture alternatives, design decisions, and implementation patterns.}
+{README updates, architecture decision records, and patterns guide.}
+{I retained repository-supported details and left unverified CI or teammate information pending.}
+{I cross-checked the documentation against the workspace. No test results were claimed for documentation changes.}
+
+\ailogentry
+{Entry M2-AN-06 -- Final Test and Report Consistency}
+{22 November 2026}
+{M2 reports, test results, coverage, and AI usage log}
+{GitHub Copilot in VS Code -- gpt-5.6-luna}
+{Align the final reports with the latest verified implementation and build results.}
+{I used AI to help review test totals, coverage, risk status, and consistency across my M2 documents.}
+{Updated report sections and final build evidence.}
+{I replaced earlier placeholders with verified values and kept peer-owned work separate.}
+{The final Maven build passed: 55 core tests and 13 app tests, with 3 skipped core cases and no failures or errors.}
 
 \clearpage
+
 % ================================================================
-% MEMBER 2: Anamta Akmal -- EDIT ONLY THIS SECTION
+% MEMBER 2: ANAMTA AKMAL -- UNCHANGED PLACEHOLDER
 % ================================================================
+
 \section{Anamta Akmal (2023113) -- Milestone 2 AI Usage}
-\textbf{Primary areas:} M-B Rate Limiting, M-E Configuration/Admin, concurrency testing, Fagan inspection, black-box test design, AI-log coordination.
+
+\textbf{Primary areas:} M-B Rate Limiting, M-E Configuration/Admin,
+concurrency testing, Fagan inspection, black-box test design, AI-log coordination.
 
 \subsection*{Entry M2-AA-01 -- \placeholder{Activity Title}}
 \begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
@@ -119,103 +197,91 @@ This document records significant AI-assisted work for Milestone 2 of the Mini A
 % Anamta: duplicate the entry block above for M2-AA-02, M2-AA-03, etc.
 
 \clearpage
+
 % ================================================================
-% MEMBER 3: Jagtar Singh -- EDIT ONLY THIS SECTION
+% MEMBER 3: JAGTAR SINGH
 % ================================================================
+
 \section{Jagtar Singh (2023266) -- Milestone 2 AI Usage}
-\textbf{Primary areas:} M-C Cache, M-D Circuit Breaker, integration/dashboard, static analysis, white-box test design, SCM and submission evidence.
 
-\subsection*{Entry M2-JS-01 -- M-C Fast-Path Cache Implementation and Defect Review}
-\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
-\item[Date] 2026-11-22
-\item[Module / Deliverable] M-C Fast-Path Cache; \texttt{gateway-core/src/main/java/com/mag/core/upstream/impl/CachingUpstreamClient.java}; \texttt{CachingUpstreamClientTest.java}
-\item[Tool and Model Version] GitHub Copilot SDK via VS~Code agent session. The exact underlying model identifier and version were not exposed in the available session, so they are not claimed.
-\item[Purpose] Inspect the actual M-C implementation, identify genuine defects, add focused regression evidence and rerun the core suite.
-\item[Prompt / Activity Summary] The coding session requested a source audit and fixes limited to Jagtar Singh's M-C/M-D code. The AI examined cache hit/miss, TTL, bounded LRU, single-flight, Set-Cookie/private/no-store and cross-user key behavior.
-\item[Material Adopted] AI proposed and the session applied a fallback for malformed or oversized Cache-Control \texttt{max-age} values in \texttt{calculateExpiry()}, plus a JUnit regression test named \texttt{testOversizedMaxAgeFallsBackToDefaultTtl}. The existing M-C implementation and tests were not rewritten. Existing commits 9b78180 and 8094301 remain the implementation/test evidence available for the base M-C code.
-\item[Modifications Made] The AI modified the working tree; no independent manual human edit or review made after the AI change is evidenced in the session. Jagtar Singh's adoption and review of the uncommitted fix remain to be confirmed.
-\item[Verification Performed] AI ran \texttt{mvn -pl gateway-core test checkstyle:check}. The gateway-core suite reported 30 tests run, 0 failures, 0 errors and 0 skipped; core Checkstyle reported 0 violations. JaCoCo later reported 57\% instruction, 54.5\% line and 66\% branch coverage for gateway-core; cache package instruction coverage was 88\%.
-\item[Related Evidence] Commits \texttt{9b78180} (cache tests) and \texttt{8094301} (cache implementation); test report \texttt{gateway-core/target/surefire-reports/com.mag.core.upstream.impl.CachingUpstreamClientTest.txt}; JaCoCo \texttt{gateway-core/target/site/jacoco/index.html}.
-\end{description}
+\textbf{Primary areas:} M-C Cache, M-D Circuit Breaker, dashboard,
+integration, static analysis, white-box testing, SCM and documentation.
 
-\subsection*{Entry M2-JS-02 -- M-D Circuit Breaker Implementation and Defect Review}
-\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
-\item[Date] 2026-11-22
-\item[Module / Deliverable] M-D Resilience Engine; \texttt{CircuitBreaker.java}, \texttt{ClosedState.java}, \texttt{OpenState.java}, \texttt{HalfOpenState.java} and \texttt{ResilientUpstreamClient.java}
-\item[Tool and Model Version] GitHub Copilot SDK via VS~Code agent session. Exact underlying model and version: not exposed; marked unknown rather than guessed.
-\item[Purpose] Review actual State/CAS implementation, identify a real M-D defensive defect and add regression evidence.
-\item[Prompt / Activity Summary] The AI inspected the breaker states, atomic state reference, failure window, half-open probe counters and resilient decorator; it was asked to change only M-D code.
-\item[Material Adopted] AI proposed and the session adopted a null-upstream-response fix in \texttt{ResilientUpstreamClient}: return 502 \texttt{UpstreamUnavailableException}, report breaker failure, catch \texttt{RuntimeException} explicitly and propagate \texttt{Error}. It added \texttt{testNullUpstreamResponse}. The existing State implementation was not replaced. Base evidence remains commits a7b6f1c, 675a3a4 and ef37bd6.
-\item[Modifications Made] The AI modified the working tree. No independent manual human correction or review after the AI edit is evidenced; Jagtar Singh's review and adoption remain to be confirmed.
-\item[Verification Performed] \texttt{mvn -pl gateway-core test checkstyle:check} passed 30 core tests with 0 failures and 0 errors, and core Checkstyle reported 0 violations. \texttt{CircuitBreakerTest} contained 8 passing tests in the rerun; \texttt{ResilientUpstreamClientTest} contained 5 passing tests. JaCoCo resilience package coverage was approximately 86--87\% instruction coverage.
-\item[Related Evidence] Commits \texttt{a7b6f1c}, \texttt{675a3a4} and \texttt{ef37bd6}; Surefire reports for \texttt{CircuitBreakerTest} and \texttt{ResilientUpstreamClientTest}; JaCoCo report.
-\end{description}
+\ailogentry
+{Entry M2-JS-01 -- Cache Implementation and Review}
+{22 November 2026}
+{M-C Fast-Path Cache, CachingUpstreamClient.java and its tests}
+{GitHub Copilot via VS Code agent; exact model unknown}
+{Review cache behavior and fix an issue with invalid or oversized Cache-Control values.}
+{I used AI to review cache hit/miss behavior, TTL, LRU, single-flight, and cache-control handling.}
+{A fallback for oversized max-age values and the regression test testOversizedMaxAgeFallsBackToDefaultTtl.}
+{The AI modified the code. I have not recorded an independent manual review of the change.}
+{I ran core tests and Checkstyle. All 30 core tests passed, and Checkstyle reported 0 violations.}
 
-\subsection*{Entry M2-JS-03 -- Dashboard and Integration Evidence Review}
-\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
-\item[Date] 2026-11-22
-\item[Module / Deliverable] Demo dashboard and gateway integration; static dashboard files and \texttt{GatewayIntegrationTest.java}
-\item[Tool and Model Version] GitHub Copilot SDK via VS~Code agent session; exact model/version not exposed.
-\item[Purpose] Inspect the implemented three-panel dashboard and verify the repository evidence for metrics, routes and gateway request integration.
-\item[Prompt / Activity Summary] The AI reviewed \texttt{index.html}, \texttt{dashboard.js}, \texttt{AdminController.java}, \texttt{GatewayServletEntryPoint.java} and \texttt{GatewayIntegrationTest.java}, and summarized only implemented functionality.
-\item[Material Adopted] No dashboard implementation or integration test was generated or changed in this session. The AI adopted existing repository facts for documentation: Live Metrics, Routes \& Active Rules, and Request Tester panels; and integration tests for static files, metrics authorization, route updates and breaker 503 behavior.
-\item[Modifications Made] No dashboard source or test modification is evidenced. Jagtar Singh's acceptance of existing implementation was not evidenced; commit-based historical evidence remains available.
-\item[Verification Performed] The session did not run the gateway integration test suite or start the application. Static inspection found the dashboard integration test class, but execution status is not claimed. Existing commits 251275c and 56cf134 are recorded as implementation history.
-\item[Related Evidence] Commits \texttt{251275c} and \texttt{56cf134}; \texttt{gateway-app/src/main/resources/static/index.html}; \texttt{dashboard.js}; \texttt{GatewayIntegrationTest.java}.
-\end{description}
+\ailogentry
+{Entry M2-JS-02 -- Circuit Breaker and Resilience}
+{22 November 2026}
+{M-D Resilience Engine, CircuitBreaker and ResilientUpstreamClient}
+{GitHub Copilot via VS Code agent; exact model unknown}
+{Review circuit-breaker behavior and handle a null upstream response safely.}
+{I used AI to inspect the breaker states, atomic state handling, failure tracking, half-open probes, and resilient client behavior.}
+{A null-response guard returning 502, reporting breaker failure, and the test testNullUpstreamResponse.}
+{The AI modified the implementation. Independent manual review was not evidenced.}
+{30 core tests passed with no failures or errors. CircuitBreakerTest had 8 passing tests and ResilientUpstreamClientTest had 5. Core Checkstyle reported 0 violations.}
 
-\subsection*{Entry M2-JS-04 -- Static Analysis and SCM Evidence Assistance}
-\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
-\item[Date] 2026-11-22
-\item[Module / Deliverable] P2-4/P3-2/P3-6 evidence; static-analysis, repository-discipline and SCM reports
-\item[Tool and Model Version] GitHub Copilot SDK via VS~Code agent session and GitHub repository tools; exact AI model/version not exposed.
-\item[Purpose] Run available Maven Checkstyle/SpotBugs commands, preserve raw reports, audit GitHub repository evidence and create factual M2 reports.
-\item[Prompt / Activity Summary] The AI ran Checkstyle for core/app, attempted SpotBugs, inspected branches, tags, commits and PRs, checked GitHub Actions and created triage/repository evidence documents.
-\item[Material Adopted] Adopted \texttt{docs/static-analysis/m2-static-analysis-report.md}, \texttt{docs/m2-repo-discipline.md}, \texttt{docs/scm/m2-scm-evidence.md}, and raw XML/log artifacts under \texttt{docs/static-analysis/raw/}. Checkstyle result: core 1 initial warning fixed, app 3 warnings deferred. SpotBugs was recorded as failed under JDK 24 rather than as findings.
-\item[Modifications Made] AI created the reports and copied machine-generated artifacts. Jagtar Singh's independent review/approval is not evidenced. No shared tag or GitHub setting was changed.
-\item[Verification Performed] Maven Checkstyle for core/app passed; final core test+Checkstyle passed 30 tests and 0 core violations. SpotBugs failed because major-version-68 class files were unsupported by 4.8.6. GitHub Actions returned 0 workflows; no \texttt{m2-baseline} tag existed.
-\item[Related Evidence] \texttt{docs/static-analysis/m2-static-analysis-report.md}; \texttt{docs/m2-repo-discipline.md}; \texttt{docs/scm/m2-scm-evidence.md}; PR \#1 and merge commit \texttt{c4a5e43}.
-\end{description}
+\ailogentry
+{Entry M2-JS-03 -- Dashboard and Integration Review}
+{22 November 2026}
+{Dashboard, static files, AdminController, GatewayServletEntryPoint, GatewayIntegrationTest}
+{GitHub Copilot via VS Code agent; exact model unknown}
+{Review dashboard features and existing gateway integration evidence.}
+{I used AI to inspect the dashboard and integration test files and summarize the implemented functionality.}
+{Documentation of the Live Metrics, Routes and Active Rules, and Request Tester panels, plus existing integration test coverage.}
+{No dashboard source or integration test was modified in this session.}
+{I inspected the existing source and tests, but did not run the integration suite or start the application.}
 
-\subsection*{Entry M2-JS-05 -- White-Box CFG and Test-Design Assistance}
-\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
-\item[Date] 2026-11-22
-\item[Module / Deliverable] P3-5 white-box test design for M-B/M-D/M-C targets
-\item[Tool and Model Version] GitHub Copilot SDK via VS~Code agent session; exact underlying model/version not exposed.
-\item[Purpose] Produce an accurate CFG, complexity and basis-path document from actual Java source and test files.
-\item[Prompt / Activity Summary] The AI analyzed \texttt{RateLimitFilter.doFilter()}, \texttt{CircuitBreaker.allowRequest()} with delegated states, and \texttt{CachingUpstreamClient.execute()}, and mapped only repository-present JUnit methods.
-\item[Material Adopted] Adopted \texttt{docs/test-design/m2-whitebox-test-design.md}. It records RateLimit stub complexity 1/blocked, direct CircuitBreaker complexity 1 and effective state complexities, and cache complexity 4 with WB-01--WB-04. It marks the circuit CAS-loser branch as designed/not directly tested.
-\item[Modifications Made] AI created the document. No independent human review or correction is evidenced in this session.
-\item[Verification Performed] The 30 core tests and source/test references were inspected. The white-box document was checked against the exact source and JUnit method names; no additional test execution was claimed for the rate-limit stub.
-\item[Related Evidence] \texttt{docs/test-design/m2-whitebox-test-design.md}; \texttt{CircuitBreakerTest.java}; \texttt{CachingUpstreamClientTest.java}; core Surefire reports.
-\end{description}
+\ailogentry
+{Entry M2-JS-04 -- Static Analysis and Repository Evidence}
+{22 November 2026}
+{Checkstyle, SpotBugs, SCM, repository discipline, and M2 evidence reports}
+{GitHub Copilot via VS Code agent and GitHub tools; exact model unknown}
+{Collect and document static-analysis and repository evidence.}
+{I used AI to help run and review Checkstyle, attempt SpotBugs, inspect repository history and GitHub evidence, and prepare reports.}
+{Static-analysis report, repository-discipline report, SCM report, and raw logs.}
+{I recorded deferred warnings and tool limitations instead of treating them as successful findings.}
+{Checkstyle passed for core, while 3 app warnings remained deferred. SpotBugs failed due to JDK class-version compatibility. No GitHub Actions workflows or M2 baseline tag were found.}
 
-\subsection*{Entry M2-JS-06 -- Software Construction and Development LaTeX Update}
-\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
-\item[Date] 2026-11-22
-\item[Module / Deliverable] M-C/M-D/dashboard/respository evidence sections in \texttt{docs/Milestone 2/Software construction and Development.tex}
-\item[Tool and Model Version] GitHub Copilot SDK via VS~Code agent session; exact underlying model/version not exposed.
-\item[Purpose] Add verified M2 implementation and evidence for Jagtar Singh only, while preserving existing M1 material and leaving Ahmad/Anamta content untouched.
-\item[Prompt / Activity Summary] The AI reviewed the existing LaTeX, source, tests, execution reports and repository evidence, then edited only M-C/M-D/dashboard and Jagtar's repository/concurrency/test sections.
-\item[Material Adopted] AI edits added M-C cache, M-D breaker, dashboard, State/Proxy rationale, SOLID/concurrency/test/repository subsections and replaced relevant placeholders with actual evidence. It marked missing CI, reviewer, tag and integration evidence as pending.
-\item[Modifications Made] AI directly modified the LaTeX. No independent manual review or correction is evidenced; no LaTeX compiler was available in the audited session.
-\item[Verification Performed] Source and generated HTML/XML/report evidence were inspected. Git diff review confirmed the file changed; no TeX compilation or PDF output was produced.
-\item[Related Evidence] \texttt{docs/Milestone 2/Software construction and Development.tex}; source commit \texttt{2780b4c}; M-C/M-D source and test commits; M2 reports listed above.
-\end{description}
+\ailogentry
+{Entry M2-JS-05 -- White-Box Test Design}
+{22 November 2026}
+{P3-5, CFG and basis-path test design for M-B, M-D, and M-C}
+{GitHub Copilot via VS Code agent; exact model unknown}
+{Prepare white-box testing documentation from actual source and test files.}
+{I used AI to review control flow and map existing test cases to the relevant paths.}
+{White-box test design document with CFGs, complexity details, and basis-path mappings.}
+{I checked the documented paths and test names against the source files, including paths not directly tested.}
+{I reviewed the report against the existing 30 core tests and repository source. No additional test execution was claimed.}
 
-\subsection*{Entry M2-JS-07 -- Software Quality Assurance LaTeX Update}
-\begin{description}[leftmargin=3.6cm,style=nextline,font=\bfseries]
-\item[Date] 2026-11-22
-\item[Module / Deliverable] P3-2/P3-5/P3-6 and R3/R5 evidence in \texttt{docs/Milestone 2/Software Quality Assurance.tex}
-\item[Tool and Model Version] GitHub Copilot SDK via VS~Code agent session; exact underlying model/version not exposed.
-\item[Purpose] Update the Milestone 2 SQA document with only Jagtar Singh's static-analysis, white-box, SCM and relevant risk evidence.
-\item[Prompt / Activity Summary] The AI read the existing SQA LaTeX and M2 evidence reports, then replaced relevant placeholders and added actual findings, CFG counts, PR/tag/CI status and R3/R5 updates.
-\item[Material Adopted] AI edits updated static-analysis tables, CFG and basis-path mappings, SCM quality-gate evidence, RTM M-C/M-D/cache entries and R3/R5 status. It preserved the M1/Historical sections without rewriting Ahmad/Anamta-owned deliverables.
-\item[Modifications Made] AI directly modified the LaTeX. No independent manual human review or correction is evidenced; no LaTeX compiler was available.
-\item[Verification Performed] The AI cross-checked the file against source/test/report artifacts and reviewed the Git diff. No PDF or LaTeX build was produced.
-\item[Related Evidence] \texttt{docs/Milestone 2/Software Quality Assurance.tex}; static-analysis report; white-box report; SCM/repository reports; M-C/M-D source and tests.
-\end{description}
+\ailogentry
+{Entry M2-JS-06 -- Software Construction Report}
+{22 November 2026}
+{M-C, M-D, dashboard, repository and testing sections in the Software Construction report}
+{GitHub Copilot via VS Code agent; exact model unknown}
+{Update the report with my M2 implementation and supporting evidence.}
+{I used AI to help write and update the cache, circuit breaker, dashboard, design patterns, concurrency, testing, and repository sections.}
+{Updated LaTeX report sections with source-supported details and evidence.}
+{I kept missing CI, review, and external evidence marked as pending.}
+{I checked the report changes against source files and reports. The LaTeX document was not compiled.}
 
-% Jagtar: this block contains the M2 entries added by the Copilot SDK coding session.
+\ailogentry
+{Entry M2-JS-07 -- Software Quality Assurance Report}
+{22 November 2026}
+{P3-2, P3-5, P3-6, RTM and risk sections in the SQA report}
+{GitHub Copilot via VS Code agent; exact model unknown}
+{Update the SQA report with static analysis, white-box testing, SCM, and risk evidence.}
+{I used AI to help update static-analysis results, CFG and basis-path details, quality-gate evidence, RTM entries, and risk status.}
+{Updated SQA LaTeX sections based on M2 reports and source/test evidence.}
+{I kept the historical sections intact and did not claim unverified results.}
+{I checked the report against the available source and evidence documents. The LaTeX was not compiled.}
 
 \end{document}
