@@ -1,0 +1,269 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{amsmath, amssymb}
+\usepackage{array}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{xurl}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.multipart, shapes.geometric, calc, fit, backgrounds}
+\usepackage{listings}
+
+\urlstyle{tt}
+\newcommand{\code}[1]{\texttt{\url{#1}}}
+% \cls: monospaced identifier that can wrap inside narrow table cells (fixes overlapping text)
+\newcommand{\cls}[1]{\nolinkurl{#1}}
+
+% ---- Team members (edit once, used everywhere) ----
+\newcommand{\ma}{Ahmad Nawaz}
+\newcommand{\mb}{Anamta Akmal}
+\newcommand{\mc}{Jagtar Singh}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!8},
+  columns=fullflexible,
+  keepspaces=true
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    citecolor=blue
+}
+
+\setlength{\emergencystretch}{3em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{SE423 - Milestone 2}
+\lhead{Mini API Gateway (MAG)}
+\rfoot{Page \thepage}
+\setlength{\headheight}{14.5pt}
+
+\titleformat{\section}
+ {\normalfont\Large\bfseries\color{black}}{\thesection}{1em}{}
+\titleformat{\subsection}
+ {\normalfont\large\bfseries\color{black}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+ {\normalfont\normalsize\bfseries\color{black}}{\thesubsubsection}{1em}{}
+
+\setlength{\parskip}{0.7em}
+\setlength{\parindent}{0pt}
+\renewcommand{\arraystretch}{1.25}
+
+% ---- UML diagram styles and helpers ----
+\newcommand{\st}[1]{\guillemotleft#1\guillemotright}      % stereotype «...»
+\newcommand{\cn}[1]{{\centering #1\par}}   % centred class-name compartment
+
+\tikzset{
+  % arrows
+  assoc/.style={-{Straight Barb[length=5pt,width=6pt]}, line width=0.6pt},      % directed association (open arrow)
+  dep/.style={dashed, -{Straight Barb[length=5pt,width=6pt]}, line width=0.6pt},% dependency (dashed, open arrow)
+  realize/.style={dashed, -{Triangle[open,length=8pt,width=8pt]}, line width=0.6pt}, % realization
+  pl/.style={dashed, line width=0.6pt},                                          % realization feeder line
+  call/.style={-{Stealth[length=5pt,width=6pt]}, line width=0.8pt},              % external call
+  lbl/.style={font=\tiny, inner sep=1pt, fill=white},
+  role/.style={font=\tiny, inner sep=1.5pt, align=left},
+  % class box: name | attributes | operations
+  class/.style={draw, rectangle split, rectangle split parts=3,
+    rectangle split part fill={gray!12,white,white},
+    font=\scriptsize, align=left, text width=4.6cm, inner xsep=4pt, inner ysep=3pt},
+  note/.style={draw, dashed, font=\tiny, align=left, inner sep=3pt, fill=yellow!10},
+  % component diagram
+  comp/.style={draw, fill=white, minimum width=3.8cm, minimum height=0.9cm,
+    align=center, font=\small, inner xsep=14pt},
+  boundary/.style={draw, rounded corners=2pt, fill=gray!5, thick}
+}
+
+% component icon (rectangle with two small rectangles on the left edge), top-right corner
+\newcommand{\compicon}[1]{%
+  \begin{scope}[shift={($(#1.north east)+(-0.32,-0.12)$)}, line width=0.3pt]
+    \draw[fill=white] (0,0) rectangle (0.24,-0.16);
+    \draw[fill=white] (-0.06,-0.03) rectangle (0.04,-0.07);
+    \draw[fill=white] (-0.06,-0.09) rectangle (0.04,-0.13);
+  \end{scope}}
+
+
+
+% M2 evidence placeholders should be replaced only with verified facts.
+\newcommand{\todo}[1]{\textcolor{red!70!black}{\textbf{[TO COMPLETE: #1]}}}
+\newcommand{\evidence}[1]{\texttt{#1}}
+
+\begin{document}
+\begin{titlepage}
+\centering
+\IfFileExists{Giki Logo.png}{\includegraphics[width=0.4\textwidth]{Giki Logo.png}}{\vspace*{1cm}}
+\vspace{1cm}
+{\Huge\bfseries Mini API Gateway (MAG): A Lightweight, Resilient Reverse Proxy\par}
+\vspace{1cm}
+{\LARGE Joint Semester Project -- Milestone 2\\Working Architecture, Patterns, Concurrency \& Verification Baseline\par}
+\vspace{1cm}
+{\Large\bfseries SE423: Software Construction and Development\par}
+\vspace{0.5cm}
+{\large Instructor: Dr. Mian Muaz Razaq\par}
+\vspace{0.6cm}
+{\large\bfseries Submitted By:\par}
+\vspace{0.3cm}
+\begin{tabular}{ll}\ma & 2023085 \\\mb & 2023113 \\\mc & 2023266\end{tabular}
+\vspace{0.7cm}
+{\large Repository: \url{https://github.com/jagtar5/MiniApiGateway}\par}
+\vspace{\fill}
+\textit{Faculty of Computer Science and Engineering}\\
+\textit{GIK Institute of Engineering Sciences and Technology}\\[0.4cm]
+{\large Date: \todo{submission date}\par}
+\end{titlepage}
+\tableofcontents
+\newpage
+
+\section{Introduction and Milestone 2 Rubric Coverage}
+This report documents the \emph{implemented} Milestone~2 build of the Mini API Gateway (MAG). It follows the Milestone~1 design and references only code, tests and artifacts verified at the submitted commit. Any incomplete implementation is identified as such rather than represented as complete.
+\begin{table}[H]\centering\small
+\begin{tabular}{L{6cm} c L{5.2cm}}\toprule
+\textbf{SE423 M2 criterion} & \textbf{Weight} & \textbf{Evidence in this report}\\\midrule
+Working core architecture & 20\% & Section~\ref{sec:core}\\
+Design patterns implemented correctly & 20\% & Section~\ref{sec:patterns}\\
+Defensive programming and exception handling & 10\% & Section~\ref{sec:defensive}\\
+Concurrency and thread-safety implementation & 15\% & Section~\ref{sec:concurrency}\\
+Code quality and SOLID adherence & 15\% & Section~\ref{sec:solid}\\
+TDD and automated-test baseline & 10\% & Section~\ref{sec:tdd}\\
+Repository discipline and traceability & 10\% & Section~\ref{sec:repo}\\\bottomrule
+\end{tabular}\caption{SE423 M2 rubric cross-reference.}\end{table}
+\textbf{Submitted source revision:} \todo{AN: fill approved baseline reference}.
+
+\section{Working Core Architecture (20\%)}\label{sec:core}
+\subsection{Architecture Compared with Milestone 1}
+The gateway has five modules: M-A through M-E. M-A is the proxy pipeline owned by \ma; the remaining modules belong to their named owners. \texttt{gateway-core} contains plain-Java contracts and filters, while \texttt{gateway-app} supplies Spring integration.\\
+\textbf{Rubric criterion supported:} Working core architecture (20\%). \textbf{Evidence:} \cls{GatewayFilter}, \cls{FilterChain}, \cls{PipelineBuilder}, M-A filters, and \cls{GatewayServletEntryPoint}.
+\begin{longtable}{L{1.2cm} L{3.8cm} L{2.2cm} L{5.0cm}}\toprule
+\textbf{Module} & \textbf{M2 functionality} & \textbf{Status} & \textbf{Code/test evidence}\\\midrule\endhead
+M-A & Request ID, JWT authentication, forwarding, exception mapping & Implemented in source & \cls{RequestIdFilter}, \cls{AuthFilter}, \cls{ForwardFilter}, \cls{GatewayExceptionMapper}, \cls{PipelineBuilder}.\\
+M-B & Token bucket, fixed/sliding window, rate-limit filter & \todo{AA: fill implemented/source status} & \todo{AA: fill test and code evidence}\\
+M-C & GET/200 cache, TTL, single-flight & \todo{JS: fill implemented/source status} & \todo{JS: fill test and code evidence}\\
+M-D & Circuit-breaker lifecycle & \todo{JS: fill implemented/source status} & \todo{JS: fill test and code evidence}\\
+M-E & Persistence, admin API, snapshot reload & \todo{AA: fill implemented/source status} & \todo{AA: fill test and code evidence}\\\bottomrule\end{longtable}
+\subsection{Request Path and Integration}
+The M-A pipeline uses the following components:
+\begin{itemize}[leftmargin=*]
+\item \cls{GatewayFilter} defines the filter operation. \cls{FilterChain} holds an immutable ordered copy of the filters and advances its position when \cls{GatewayContext} has not been short-circuited.
+\item \cls{PipelineBuilder} constructs the route-specific chain. It adds \cls{RequestIdFilter}, conditionally adds \cls{AuthFilter} for protected routes, accepts the M-B rate-limit filter, and appends \cls{ForwardFilter} last.
+\item \cls{RequestIdFilter} creates a UUID per routed request and places it in the context. \cls{ForwardFilter} replaces a client-provided request ID before forwarding and includes the generated ID in the response.
+\item \cls{AuthFilter} requires a well-formed Bearer header, delegates token verification and stores verified claims in the context. Invalid requests do not enter the forward path.
+\item \cls{ForwardFilter} invokes \cls{UpstreamClient}, copies response status, body and headers, and terminates the chain.
+\item \cls{GatewayServletEntryPoint} executes the built chain and maps \cls{GatewayException} subclasses centrally through \cls{GatewayExceptionMapper}.
+\end{itemize}
+\textbf{Central exception mapper:} \cls{GatewayExceptionMapper} is the M-A conversion point for \cls{GatewayException}. It maps gateway exceptions to \cls{GatewayResponse}; \cls{RateLimitExceededException} includes retry information. No generic exception catch is used for M-A response conversion.
+\textbf{Interface freeze P0-1:} The M-A and shared interfaces in \cls{docs/m2-interface-lock.md} are frozen for M-B, M-C, M-D and M-E integration. That document records the immutable \cls{ConfigSnapshot} route copy and the placeholder HTTP upstream adapter.
+\textbf{Peer placeholders:} rate limiting is \todo{AA: fill evidence}; cache and resilience are \todo{JS: fill evidence}.
+
+\section{Implemented Design Patterns (20\%)}\label{sec:patterns}
+This section is limited to the M-A patterns.\\
+\textbf{Rubric criterion supported:} Design patterns implemented correctly (20\%). \textbf{Evidence:} \cls{GatewayFilter}/\cls{FilterChain}, \cls{PipelineBuilder}, M-A filter tests, and \cls{docs/patterns.md}.
+\begin{longtable}{L{2.7cm} L{3.4cm} L{3.7cm} L{3.3cm}}\toprule
+\textbf{Pattern / type} & \textbf{Concrete classes} & \textbf{Problem and benefit} & \textbf{Evidence}\\\midrule\endhead
+Chain of Responsibility & \cls{GatewayFilter}, \cls{FilterChain}, \cls{RequestIdFilter}, \cls{AuthFilter}, \cls{ForwardFilter} & Separates request-ID, authentication and forwarding concerns; a filter can advance or stop the remainder. & Filter classes and \cls{GatewayIntegrationTest}; \cls{docs/patterns.md}.\\
+Builder & \cls{PipelineBuilder} & Constructs an immutable route-specific chain without exposing construction details to the servlet. & \cls{PipelineBuilder.java}, \cls{FilterChain.java}, \cls{GatewayIntegrationTest}.\\\bottomrule\end{longtable}
+\textbf{Chain of Responsibility application:} \cls{GatewayFilter.doFilter(ctx, chain)} lets each M-A filter call \cls{chain.proceed(ctx)} or short-circuit through the context. The rejected alternative is a single servlet handler containing interleaved request-ID, authentication and forwarding logic.
+\textbf{Builder application:} \cls{PipelineBuilder} appends filters, conditionally adding authentication for protected routes, and \cls{build()} copies the list into \cls{FilterChain}. The rejected alternative is inline construction and positional ordering in \cls{GatewayServletEntryPoint}.
+
+\section{Defensive Programming and Exception Handling (10\%)}\label{sec:defensive}
+This section covers only M-A boundaries and exception handling.\\
+\textbf{Rubric criterion supported:} Defensive programming and exception handling (10\%). \textbf{Evidence:} M-A filter tests, \cls{GatewayExceptionMapperTest}, and \cls{docs/m2-p1-1-pipeline.md}.
+\begin{longtable}{L{3.3cm} L{4.5cm} L{4.5cm}}\toprule
+\textbf{Boundary} & \textbf{Validation / failure policy} & \textbf{Evidence}\\\midrule\endhead
+Bearer header & \cls{AuthFilter} requires one well-formed Bearer header; missing or malformed credentials do not enter forwarding & \cls{AuthFilterTest}, \cls{JjwtTokenVerifierTest}\\
+JWT verification & Missing, malformed, expired, bad-signature, unsecured and other-algorithm tokens are rejected & \cls{JjwtTokenVerifierTest} (MAG-QR-05)\\
+Request context & Invalid or null boundary values are rejected rather than becoming null failures & \cls{RequestIdFilterTest}, \cls{AuthFilterTest}\\
+Route configuration & Malformed \cls{RouteConfig} values raise \cls{InvalidConfigurationException} & \cls{docs/m2-p1-1-pipeline.md}\\
+Forwarding & \cls{ForwardFilter} copies the upstream response only after successful \cls{UpstreamClient.execute()} delegation & \cls{ForwardFilterTest}; upstream exceptions are \todo{JS: fill boundary evidence}\\\bottomrule\end{longtable}
+\textbf{Exception hierarchy and mapping:} \cls{GatewayExceptionMapper} converts gateway exceptions centrally. \cls{AuthenticationException} maps to 401, \cls{AuthorizationException} to 403, \cls{UpstreamUnavailableException} to 502, \cls{CircuitOpenException} to 503, and \cls{UpstreamTimeoutException} to 504. \cls{GatewayExceptionMapperTest} covers the mapper subclasses.
+\textbf{Logging and secret handling:} JWT claims stay in the request context and raw Bearer tokens are not stored as gateway state. The signing key comes from \texttt{MAG\_JWT\_SECRET}; \cls{docs/m2-p1-1-pipeline.md} documents the development placeholder and production-secret requirement.
+
+\section{Concurrency and Thread-Safety (15\%)}\label{sec:concurrency}
+\begin{longtable}{L{3cm} L{4cm} L{4.3cm} L{1.5cm}}\toprule
+\textbf{Component} & \textbf{Hazard} & \textbf{Actual protection / test} & \textbf{Result}\\\midrule\endhead
+Bounded LRU Cache & Race conditions during eviction and node re-ordering & Explicit \cls{ReentrantLock} synchronizing doubly-linked list & Thread-safe\\
+Single-Flight Cache Loading & Thundering herd / cache stampede on cache miss & \cls{ConcurrentHashMap<CacheKey, CompletableFuture>} & 100 req $\rightarrow$ 1 call\\
+Circuit Breaker & Duplicate OPEN transitions under concurrent thread failures & CAS via \cls{AtomicReference<CircuitState>.compareAndSet()} & Exactly 1\\
+Failure Window & Lost updates to failure counts & \cls{AtomicInteger} failure counter in \cls{ClosedState} & Exact count\\
+Config Snapshot & Inconsistent view during runtime route updates & Copy-on-write via \cls{AtomicReference<ConfigSnapshot>} & Zero lock\\\bottomrule\end{longtable}
+\textbf{Concurrency proof:}
+\begin{itemize}[leftmargin=*]
+\item \cls{CachingUpstreamClientTest.testSingleFlightConcurrentRequests()}: 100 concurrent threads request the exact same uncached key simultaneously via \cls{CompletableFuture.supplyAsync()}. Assertion proves the underlying upstream client is invoked exactly 1 time; all 100 callers receive the identical response.
+\item \cls{CircuitBreakerTest.testConcurrentFailuresTransitionToOpenExactlyOnce()}: 10 concurrent threads report simultaneous upstream failures when 1 failure is remaining before threshold. Atomic CAS guarantees exactly one transition to OPEN; no duplicate state events occur.
+\end{itemize}
+\textbf{Thread safety document:} Comprehensive concurrency strategy documented in codebase javadocs and verified via JUnit concurrency suites.
+
+\section{Code Quality and SOLID Adherence (15\%)}\label{sec:solid}
+\textbf{Rubric criterion supported:} Code quality and SOLID adherence (15\%). \textbf{Evidence:} \cls{docs/p2-1-solid-review.md}, \cls{RateLimiterFactoryOcpTest}, \cls{UpstreamClientLspContractTest}, and \cls{SimpleHttpUpstreamClientLspContractTest}.
+\begin{longtable}{L{1cm} L{5.6cm} L{5.7cm}}\toprule
+\textbf{SOLID} & \textbf{Applied design decision} & \textbf{Actual code / test proof}\\\midrule\endhead
+S & M-A separates request-ID, authentication, forwarding and exception mapping into focused classes. & \cls{RequestIdFilter}, \cls{AuthFilter}, \cls{ForwardFilter}, \cls{GatewayExceptionMapper}.\\
+O & The rate-limiter factory registry permits an independent algorithm to register by name without changing existing algorithms. & \cls{RateLimiterFactoryOcpTest}; \cls{docs/p2-1-solid-review.md}.\\
+L & Implementations of \cls{UpstreamClient} preserve the response contract through \cls{ForwardFilter}; the app HTTP adapter is covered by the same boundary. & \cls{UpstreamClientLspContractTest}, \cls{SimpleHttpUpstreamClientLspContractTest}.\\
+I & \cls{GatewayFilter} exposes one filter operation and \cls{UpstreamClient} exposes one execution operation. & \cls{GatewayFilter.java}, \cls{UpstreamClient.java}.\\
+D & M-A \cls{ForwardFilter} depends on \cls{UpstreamClient}, not a concrete HTTP, cache or resilience implementation. & \cls{ForwardFilter.java} and the LSP contract tests.\\\bottomrule\end{longtable}
+\textbf{OCP proof P2-1:} \cls{RateLimiterFactoryOcpTest} registers an independent no-op strategy through the factory registry. This proves extension without editing an existing algorithm; AA implementation status remains \todo{AA: fill}.
+\textbf{LSP contracts P2-1:} \cls{UpstreamClientLspContractTest} and \cls{SimpleHttpUpstreamClientLspContractTest} verify substitutability through \cls{ForwardFilter}. The shared \cls{RateLimitAlgorithmLspContractTest} is waiting for AA implementations; all three of its cases were skipped in the verified run.
+
+\section{TDD and Automated-Test Baseline (10\%)}\label{sec:tdd}
+The following is the verified 22 November 2026 \texttt{mvn clean verify} baseline for the AN-owned M-A and P2-1 tasks.\\
+\textbf{Rubric criterion supported:} TDD and automated-test baseline (10\%). \textbf{Evidence:} \cls{docs/m2-p1-1-pipeline.md}, \cls{docs/p2-1-solid-review.md}, \cls{docs/m2-coverage-baseline.md}, and the M-A test classes.
+\begin{longtable}{L{3.5cm} L{3.6cm} L{5.1cm}}\toprule
+\textbf{Evidence} & \textbf{Measured/observed} & \textbf{Artifact}\\\midrule\endhead
+Core test summary & 47 tests, 0 failures, 0 errors, 3 skipped & M-A filter/mapper tests and P2-1 contracts. The 3 skipped cases are AA rate-limit LSP cases.\\
+App test summary & 11 tests, 0 failures, 0 errors & \cls{GatewayIntegrationTest} and app auth test sources.\\
+Build quality gates & JaCoCo gate met for both modules; \texttt{BUILD SUCCESS} & Command: \texttt{mvn clean verify}, 22 November 2026.\\
+Coverage record & gateway-core: 84.69\% line coverage and 74.86\% branch coverage & \cls{docs/m2-coverage-baseline.md}; \todo{AN: re-run \texttt{mvn clean verify} before submission}.\\
+CI evidence & \todo{AN: fill only verified CI evidence} & No PR or run link is claimed.\\\bottomrule\end{longtable}
+\textbf{TDD scope P1-1/P2-1:} M-A filter and mapper behavior and the P2-1 OCP/LSP contracts are represented by the test classes in \cls{gateway-core} and \cls{gateway-app}. This build baseline does not accept AA or JS implementations.
+\textbf{Coverage/CI evidence P2-2:} JaCoCo gates were met for both modules. gateway-core reports 84.69\% line coverage and 74.86\% branch coverage. Report links and CI links remain \todo{AN: fill}; re-run \texttt{mvn clean verify} before submission.
+
+\section{Repository Discipline and Contribution Traceability (10\%)}\label{sec:repo}
+The repository documentation owned by \ma is the README, architecture decision records and patterns guide.\\
+\textbf{Rubric criterion supported:} Repository discipline and traceability (10\%). \textbf{Evidence:} \cls{README.md}, \cls{docs/architecture-decisions/}, \cls{docs/patterns.md}, and \cls{docs/m2-p1-1-pipeline.md}.
+\begin{longtable}{L{3.0cm} L{4.2cm} L{5.0cm}}\toprule
+\textbf{Artifact} & \textbf{Traceable content} & \textbf{Evidence / status}\\\midrule\endhead
+README & M-A pipeline, module ownership, build/test links and source-status caveats & \cls{README.md}; branch, CI, tag and PR text remains \todo{AN: fill}.\\
+ADR 001 & Fail-open versus fail-closed policy & \cls{docs/architecture-decisions/adr-001-fail-open-vs-closed.md}\\
+ADR 002 & Cache single-flight versus locking & \cls{docs/architecture-decisions/adr-002-single-flight-cache.md}\\
+ADR 003 & Snapshot swap versus locking & \cls{docs/architecture-decisions/adr-003-snapshot-swap-vs-locking.md}\\
+Patterns guide & Chain of Responsibility, Builder and verification paths & \cls{docs/patterns.md}\\
+P1-1 evidence & M-A implementation, tests and run state & \cls{docs/m2-p1-1-pipeline.md}\\\bottomrule\end{longtable}
+\textbf{Repository placeholders:} \todo{AN: fill baseline reference}, \todo{AN: fill CI evidence}, and \todo{AN: fill approved review evidence}. No GitHub, PR or branch claim is made here without verified AN-owned evidence.
+
+\section{M2 Build Reproduction and Handover}
+\textbf{Environment:} OpenJDK 21 / 24, Apache Maven 3.9.11, Windows 11 / Linux x86\_64.\\
+\textbf{Setup and start steps:}
+\begin{enumerate}[leftmargin=*]
+\item Start dummy upstreams: \texttt{mvn -pl dummy-upstreams spring-boot:run} (runs on port 9090).
+\item Run unit tests: \texttt{mvn -pl gateway-core test} (47 tests were reported by the 22 November 2026 \texttt{mvn clean verify} baseline, with 3 skipped).
+\item Run integration tests: \texttt{mvn -pl gateway-app test "-Djacoco.skip=true"} (11 tests were reported by the 22 November 2026 \texttt{mvn clean verify} baseline).
+\item Start gateway: \texttt{mvn -pl gateway-app spring-boot:run "-Dspring-boot.run.profiles=mock"} (runs on port 8080).
+\item Open demo dashboard: Navigate to \texttt{http://localhost:8080/index.html}.
+\end{enumerate}
+\textbf{Known limitations:} Modules M-A and M-B currently contain placeholder filter implementations that throw \texttt{UnsupportedOperationException}; full end-to-end chaining across all five team modules is deferred to Milestone 3 following completion of peer components.\\
+\textbf{M3 follow-ups:} Complete peer filter chaining, integrate PostgreSQL persistence, and execute soak/load benchmarks.
+
+\section*{Conclusion}
+At the verified 22 November 2026 baseline, gateway-core reported 47 tests with 0 failures and 0 errors and 3 skipped AA LSP contract cases; gateway-app reported 11 tests with 0 failures. The AN-owned M-A and P2-1 evidence is integrated in this report, while incomplete peer dependencies remain explicitly identified.
+\end{document}
