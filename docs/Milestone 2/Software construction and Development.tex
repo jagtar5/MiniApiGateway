@@ -148,136 +148,136 @@ Code quality and SOLID adherence & 15\% & Section~\ref{sec:solid}\\
 TDD and automated-test baseline & 10\% & Section~\ref{sec:tdd}\\
 Repository discipline and traceability & 10\% & Section~\ref{sec:repo}\\\bottomrule
 \end{tabular}\caption{SE423 M2 rubric cross-reference.}\end{table}
-\textbf{Submitted source revision:} Branch \texttt{feature/js-integration}, commit \texttt{56cf134} (integrating M-C \texttt{8094301}, M-D \texttt{ef37bd6}, and 3-panel dashboard).
+\textbf{Submitted source revision:} integrated branch \texttt{feature/js-integration} at commit \texttt{2780b4c9da3db887c89ebe58c392c61bc99ae3e6}; \texttt{m2-baseline} is not present and is not claimed as evidence.
 
 \section{Working Core Architecture (20\%)}\label{sec:core}
 \subsection{Architecture Compared with Milestone 1}
-The proposed system consists of \textbf{M-A} Proxy Pipeline, \textbf{M-B} Identity \& Traffic Control, \textbf{M-C} Fast-Path Cache, \textbf{M-D} Resilience Engine and \textbf{M-E} Configuration \& Admin. The Maven modules are \texttt{gateway-core} (pure Java 21 domain logic) and \texttt{gateway-app} (Spring Boot 3.3.4 shell).
-\begin{longtable}{L{1.2cm} L{3.8cm} L{2.2cm} L{5.0cm}}\toprule
+The proposed system consists of \textbf{M-A} Proxy Pipeline, \textbf{M-B} Identity \& Traffic Control, \textbf{M-C} Fast-Path Cache, \textbf{M-D} Resilience Engine and \textbf{M-E} Configuration \& Admin. The Maven modules are \texttt{gateway-core} and \texttt{gateway-app}; the former contains domain logic and the latter the Spring Boot application shell.
+\begin{longtable}{L{1.2cm} L{3.8cm} L{2cm} L{5.2cm}}\toprule
 \textbf{Module} & \textbf{M2 functionality} & \textbf{Status} & \textbf{Code/test evidence}\\\midrule\endhead
-M-A & Request ID, JWT authentication, forwarding, exception mapping & Incomplete (BLOCKED) & Ahmad Nawaz owned; filters throw \texttt{UnsupportedOperationException}. GatewayServletEntryPoint provides local routing scaffolding.\\
-M-B & Token bucket, fixed and sliding window, rate-limit filter & Incomplete (BLOCKED) & Anamta Akmal owned; algorithms throw \texttt{UnsupportedOperationException}.\\
-M-C & GET/200 bounded cache, TTL, single-flight & \textbf{Implemented} & Jagtar Singh owned; \cls{BoundedLruCache}, \cls{CachingUpstreamClient}, \cls{CacheKey}. 16 unit tests passing in \texttt{gateway-core}.\\
-M-D & Circuit breaker closed/open/half-open lifecycle & \textbf{Implemented} & Jagtar Singh owned; GoF State pattern (\cls{CircuitBreaker}, \cls{ClosedState}, \cls{OpenState}, \cls{HalfOpenState}, \cls{ResilientUpstreamClient}). 12 unit tests passing in \texttt{gateway-core}.\\
-M-E & Persistence, admin API, validation, snapshot reload & Partial & Anamta Akmal / Jagtar Singh; \cls{AtomicConfigStore} in-memory snapshot store active; \cls{AdminController} CRUD active; PostgreSQL persistence deferred via \texttt{mock} profile.\\\bottomrule\end{longtable}
+M-A & Request ID, JWT authentication, forwarding, exception mapping & \todo{status} & \todo{classes and test links}\\
+M-B & Token bucket, fixed and sliding window, rate-limit filter & \todo{status} & \todo{classes and test links}\\
+M-C & GET/200 bounded cache, TTL, single-flight & Implemented & \evidence{CachingUpstreamClient}, \evidence{BoundedLruCache}; 12 cache tests plus 100-request stampede test\\
+M-D & Circuit breaker closed/open/half-open lifecycle & Implemented & \evidence{CircuitBreaker}, \evidence{ClosedState}, \evidence{OpenState}, \evidence{HalfOpenState}; 8 breaker/resilience tests\\
+M-E & Persistence, admin API, validation, snapshot reload & \todo{status} & \todo{classes and test links}\\\bottomrule\end{longtable}
 \subsection{Request Path and Integration}
-The request pipeline and upstream decorator chain integrate domain logic into the runnable HTTP runtime:
-\begin{itemize}[leftmargin=*]
-\item \textbf{Filter chain order (planned):} \texttt{RequestIdFilter} $\rightarrow$ \texttt{AuthFilter} $\rightarrow$ \texttt{RateLimitFilter} $\rightarrow$ \texttt{ForwardFilter}. Because upstream filter stubs were not completed by M-A/M-B, \texttt{GatewayServletEntryPoint} safely handles path dispatching, JWT auth checking, and error mapping without blocking the runtime.
-\item \textbf{Upstream client decorator chain (implemented):}
-\[ \text{Request} \longrightarrow \texttt{CachingUpstreamClient} \longrightarrow \texttt{ResilientUpstreamClient} \longrightarrow \texttt{SimpleHttpUpstreamClient} \longrightarrow \text{Upstream} \]
-On a cache hit, the request returns immediately, bypassing the circuit breaker and network completely (MAG-FR-03). On a cache miss, the resilient client enforces circuit state; if closed, it delegates to the HTTP client forwarder communicating with \texttt{dummy-upstreams} on port 9090.
-\end{itemize}
+Planned filter order: \texttt{RequestIdFilter} $\rightarrow$ \texttt{AuthFilter} $\rightarrow$ \texttt{RateLimitFilter} $\rightarrow$ \texttt{ForwardFilter}. Planned upstream decorator order: \texttt{CachingUpstreamClient} $\rightarrow$ \texttt{ResilientUpstreamClient} $\rightarrow$ \texttt{HttpUpstreamClient}. \todo{confirm actual order against merged code}.
 \begin{figure}[H]\centering
 \begin{tikzpicture}[node distance=0.55cm and 0.48cm, every node/.style={font=\footnotesize}, >=Latex]
 \node[draw,rounded corners,minimum height=0.85cm] (client) {Client};
-\node[draw,rounded corners,right=of client,minimum height=0.85cm,align=center] (filters) {Servlet Entry\\/api/**};
-\node[draw,rounded corners,right=of filters,minimum height=0.85cm,align=center] (cache) {Cache (M-C)\\\cls{CachingUpstreamClient}};
-\node[draw,rounded corners,right=of cache,minimum height=0.85cm,align=center] (breaker) {Breaker (M-D)\\\cls{ResilientUpstreamClient}};
-\node[draw,rounded corners,right=of breaker,minimum height=0.85cm,align=center] (up) {Upstream\\Port 9090};
+\node[draw,rounded corners,right=of client,minimum height=0.85cm,align=center] (filters) {Filter chain\\M-A / M-B};
+\node[draw,rounded corners,right=of filters,minimum height=0.85cm,align=center] (cache) {Cache\\M-C};
+\node[draw,rounded corners,right=of cache,minimum height=0.85cm,align=center] (breaker) {Breaker\\M-D};
+\node[draw,rounded corners,right=of breaker,minimum height=0.85cm,align=center] (up) {Upstream};
 \draw[->] (client)--(filters);\draw[->](filters)--(cache);\draw[->](cache)--(breaker);\draw[->](breaker)--(up);
-\node[draw,rounded corners,below=1cm of cache,align=center] (config) {M-E: \cls{AtomicConfigStore} (Thread-safe snapshot)};
-\draw[->,dashed] (config)--(filters);\draw[->,dashed] (config)--(cache);
+\node[draw,rounded corners,below=1cm of cache,align=center] (config) {M-E: validated configuration snapshot};
+\draw[->,dashed] (config)--(filters);\draw[->,dashed] (config)--(breaker);
 \end{tikzpicture}
-\caption{Implemented runtime integration view.}\end{figure}
+\caption{Proposed integration view; revise if actual wiring differs.}\end{figure}
 \subsection{End-to-End Demonstration}
 \begin{longtable}{L{4.3cm} L{4.2cm} L{4.1cm}}\toprule
 \textbf{Scenario} & \textbf{Expected} & \textbf{Observed result / evidence}\\\midrule\endhead
-Valid signed JWT to \texttt{/api/fast} & Proxied upstream response (200 OK) & HTTP 200 OK via \cls{GatewayIntegrationTest}; upstream responded in $<15$\,ms.\\
-Missing JWT on protected route & HTTP 401 Unauthorized & HTTP 401 verified in \cls{testAuthRequiredRejectsMissingToken}.\\
-Circuit open fail-fast & HTTP 503 Service Unavailable & HTTP 503 verified in \cls{testCircuitBreakerFailsFastInGateway}; zero upstream network calls.\\
-Cacheable repeated GET & Second request served from safe cache & Verified in \cls{CachingUpstreamClientTest}; upstream called exactly once.\\
-Admin route listing and updating & 200 OK with dynamic route update & Verified in \cls{testAdminRoutesListingAndUpdating}; cache TTL updated from 60s to 45s at runtime.\\
-Interactive 3-Panel Dashboard & Live metrics, editable routes, request tester & Verified in \cls{testDashboardStaticFiles} and browser smoke test on \texttt{http://localhost:8080/index.html}.\\\bottomrule\end{longtable}
-\textbf{Architecture deviations from M1:} Due to missing database infrastructure in local environment and team module stubs, Spring profile \texttt{mock} was introduced to load \texttt{AtomicConfigStore} with default in-memory seed routes (\texttt{/api/fast}, \texttt{/api/slow}, \texttt{/api/flaky}, \texttt{/api/cacheable}, \texttt{/api/items/**}), cleanly isolating M-C, M-D, and dashboard integration without synthetic dependencies.
+Valid signed JWT to \texttt{/fast} & Proxied upstream response & \todo{HTTP result and run link}\\
+Missing/invalid JWT & HTTP 401; no upstream call & \todo{result}\\
+Rate limit $N+1$ & HTTP 429 and Retry-After & \todo{result}\\
+Flaky upstream circuit threshold & Breaker opens and fails fast & \todo{result}\\
+Cacheable repeated GET & Second request served from safe cache & \todo{result}\\
+Invalid configuration reload & Previous snapshot remains active & \todo{result}\\\bottomrule\end{longtable}
+\subsection{Milestone 2 M-C Cache Implementation (Jagtar Singh)}
+Source evidence: \evidence{gateway-core/src/main/java/com/mag/core/upstream/impl/CachingUpstreamClient.java}, \evidence{.../cache/BoundedLruCache.java} and \evidence{.../cache/CacheKey.java}. \texttt{CachingUpstreamClient} is a structural Proxy implementation of \texttt{UpstreamClient}. It bypasses caching for non-GET requests, derives a per-user/request cache key through \texttt{CacheKey}, returns only unexpired GET/200 responses, and delegates misses to \texttt{executeSingleFlight}. The backing \texttt{BoundedLruCache} is an access-order \texttt{LinkedHashMap} guarded by a \texttt{ReentrantLock}; setting \texttt{removeEldestEntry} to enforce the configured maximum provides bounded LRU eviction. TTL is injected through \texttt{Clock}: a response Cache-Control \texttt{max-age} overrides the configured default, and the local M-C fix falls back to the default when an oversized or malformed numeric value would overflow parsing.
+
+Cache eligibility is explicit: only GET and HTTP 200 responses are considered, while Set-Cookie, private and no-store responses are excluded. \texttt{CacheKey} includes authenticated identity information so separate users do not share profile/cache entries. Single-flight loading uses a \texttt{ConcurrentHashMap<CacheKey, CompletableFuture<UpstreamResponse>>}; the first requester owns the upstream call and competing callers join the same future. This implementation is proved by tests in \texttt{CachingUpstreamClientTest.java}, including cache hit/miss, TTL, LRU eviction, 100 concurrent misses, user separation, non-GET/non-200 and private/Set-Cookie exclusions.
+
+\subsection{Milestone 2 M-D Circuit Breaker Implementation (Jagtar Singh)}
+Source evidence: \evidence{gateway-core/src/main/java/com/mag/core/resilience/CircuitBreaker.java} and \evidence{gateway-core/src/main/java/com/mag/core/resilience/impl/}. \texttt{CircuitBreaker} uses the State pattern. \texttt{ClosedState} is the initial state and permits requests; \texttt{OpenState} fails fast until the open timeout has elapsed; then it CAS-transitions to \texttt{HalfOpenState}, whose probe allowance is tracked with atomic counters. A successful required probe set transitions back to CLOSED, while a probe failure immediately opens the circuit again. \texttt{AtomicReference<CircuitState>} and \texttt{transitionTo(...)} provide atomic state replacement by compare-and-set. Failure counting in CLOSED uses \texttt{AtomicInteger} and a clock-controlled failure window.
+
+The actual proof is \texttt{CircuitBreakerTest.java}: 8 breaker tests cover initial CLOSED, threshold-to-OPEN, OPEN timeout, HALF-OPEN recovery, HALF-OPEN re-open, probe limits, success reset and 20-thread concurrent failures. The gateway integration test also verifies that an OPEN breaker maps to HTTP 503. \texttt{ResilientUpstreamClient} reports 5xx and exceptions to the breaker, and a null response is mapped locally to HTTP 502/\texttt{UpstreamUnavailableException} after the M-D defensive fix.
+
+\subsection{Milestone 2 Dashboard Integration (Jagtar Singh)}
+Source evidence: \evidence{gateway-app/src/main/resources/static/index.html}, \evidence{gateway-app/src/main/resources/static/dashboard.js} and \evidence{gateway-app/src/test/java/com/mag/app/GatewayIntegrationTest.java}. The implemented static dashboard consists of the three panels shown in \texttt{index.html}: Live Metrics, Routes \& Active Rules, and Gateway Request Tester. \texttt{dashboard.js} calls \texttt{/admin/metrics}, \texttt{/admin/routes} and \texttt{/api/**}. The metrics panel displays allowed, blocked, cache-hit ratio and circuit state. The routes panel lists route data and supports authenticated TTL updates. The tester dispatches the selected method/path through the gateway and shows the response. Credentials are entered in the page and are sent as Authorization headers; they are not stored in source or persisted. \texttt{GatewayIntegrationTest.testDashboardStaticFiles}, \texttt{testAdminMetricsSecurity}, \texttt{testAdminRoutesListingAndUpdating} and \texttt{testCircuitBreakerFailsFastInGateway} provide integration evidence for the dashboard shell and APIs.
+
+\textbf{Architecture deviations from M1:} The implemented upstream integration remains decorator based: \texttt{CachingUpstreamClient} wraps \texttt{ResilientUpstreamClient}, which wraps the concrete HTTP client. This preserves the M1 proposal. The M-C and M-D implementations are present and tested in \texttt{gateway-core}; database-backed M-E configuration remains an application-shell integration and is not attributed to M-C/M-D.
 
 \section{Implemented Design Patterns (20\%)}\label{sec:patterns}
-Documenting patterns present and connected to the running gateway:
+Document only patterns present and actually connected to the running system. The M1 pattern plan included Chain of Responsibility, Strategy, Factory, State, Proxy and Builder.
 \begin{longtable}{L{2.9cm} L{3.3cm} L{3.8cm} L{3.1cm}}\toprule
 \textbf{Pattern / type} & \textbf{Concrete classes} & \textbf{Problem and benefit} & \textbf{Code/test proof}\\\midrule\endhead
-State (behavioral) & \cls{CircuitBreaker}, \cls{ClosedState}, \cls{OpenState}, \cls{HalfOpenState} & Manages finite-state transitions without error-prone boolean flags. Encapsulates state-specific execution and atomic CAS transitions. & \cls{CircuitBreakerTest} (8 tests), \cls{ResilientUpstreamClientTest} (4 tests).\\
-Proxy / Decorator (structural) & \cls{CachingUpstreamClient}, \cls{ResilientUpstreamClient} & Transparently wraps \cls{UpstreamClient} interface with caching and resilience without coupling callers or upstream forwarders. & \cls{CachingUpstreamClientTest} (11 tests), \cls{InfrastructureConfig.java}.\\
-Chain of Responsibility (behavioral) & \cls{GatewayFilter}, \cls{FilterChain} & Pipeline abstraction for filters; currently scaffolded in \cls{GatewayServletEntryPoint} pending M-A completion. & Interface definitions in \cls{gateway-core}.\\
-Singleton / Snapshot (creational/structural) & \cls{AtomicConfigStore}, \cls{ConfigSnapshot} & Lock-free atomic reference publication for runtime route and rule updates. & \cls{AdminController}, \cls{GatewayIntegrationTest}.\\\bottomrule\end{longtable}
-\textbf{Rejected alternatives and rationale:}
-\begin{itemize}[leftmargin=*]
-\item \emph{State Pattern vs. Switch/Boolean Flags:} Simulating the circuit breaker with a single enum and scattered \texttt{if-else} checks was rejected because it introduces concurrency races between state inspection and mutation, violates the Single Responsibility Principle, and clutters failure window logic with state switching. The GoF State pattern encapsulates state behavior into polymorphic classes and guarantees atomic CAS transitions.
-\item \emph{Proxy/Decorator vs. Monolithic Client:} Putting caching, resilience, and HTTP network dispatching in a single class was rejected because it violates SRP and prevents testing cache logic in isolation from network failure scenarios. The Decorator chain cleanly separates concerns.
-\end{itemize}
-\textbf{Runtime proof:} Verified via \cls{GatewayIntegrationTest} and unit test suites: \cls{CircuitBreakerTest.testConcurrentFailuresTransitionToOpenExactlyOnce()} proves atomic state transitions, and \cls{CachingUpstreamClientTest.testCacheHitBypassesCircuitBreaker()} proves structural decorator ordering.
+Chain of Responsibility (behavioral) & GatewayFilter, FilterChain & Ordered independent request processing & \todo{evidence}\\
+Strategy (behavioral) & RateLimitAlgorithm implementations & Replace limits without rewriting filter & \todo{evidence}\\
+Factory (creational) & RateLimiterFactory & Register and construct algorithms & \todo{evidence}\\
+State (behavioral) & \evidence{CircuitState}, \evidence{ClosedState}, \evidence{OpenState}, \evidence{HalfOpenState} & Explicit closed/open/half-open transitions and fail-fast behavior & \evidence{CircuitBreakerTest.java}: initial, threshold, open timeout, half-open recovery, probe limit and concurrent failures\\
+Proxy (structural) & \evidence{CachingUpstreamClient}, \evidence{ResilientUpstreamClient} & Decorate upstream loading and resilience without changing \evidence{UpstreamClient} & \evidence{CachingUpstreamClientTest.java}: 12 cache tests; cache-hit bypass proof\\
+Builder (creational) & PipelineBuilder & Safe assembly of ordered filters & \todo{evidence}\\\bottomrule\end{longtable}
+\textbf{Rejected alternatives and rationale:} For M-D, a boolean flag and one large \texttt{if/else} would have concentrated state transitions in \texttt{CircuitBreaker}, making open, probe and recovery behavior harder to isolate and test. The State pattern gives each state one transition policy. For M-C, subclassing or duplicating the HTTP client for caching was rejected because it would change multiple upstream implementations and hide cache behavior outside the \texttt{UpstreamClient} contract. The Proxy/decorator approach preserves the existing contract and allows cache hits to bypass resilience decoration.
+\textbf{Runtime proof:} State behavior is proved by \texttt{CircuitBreakerTest}; Proxy/cache behavior is proved by \texttt{CachingUpstreamClientTest} and the cache-hit bypass test; dashboard integration is proved by \texttt{GatewayIntegrationTest}. A complete runtime proof for all M1 patterns remains shared-team evidence and is not replaced by these M-C/M-D demonstrations.
 
 \section{Defensive Programming and Exception Handling (10\%)}\label{sec:defensive}
 \begin{longtable}{L{3.3cm} L{4.5cm} L{4.5cm}}\toprule
 \textbf{Boundary} & \textbf{Validation / failure policy} & \textbf{Implemented evidence}\\\midrule\endhead
-Cache eligibility & Only safe \texttt{GET} with status \texttt{200 OK} cached; responses with \texttt{Set-Cookie} or \texttt{Cache-Control: private/no-store} excluded & \cls{CachingUpstreamClientTest.testPrivateResponseNotCached()}\\
-Circuit breaker fail-fast & Reject requests with \cls{CircuitOpenException} when OPEN & \cls{CircuitBreakerTest.testOpenCircuitRejectsRequests()}\\
-Admin API security & Valid \texttt{Authorization: Bearer} token required; malformed payloads rejected with 400 Bad Request & \cls{GatewayIntegrationTest.testAdminMetricsSecurity()}\\
-Secret isolation & JWT tokens hashed using SHA-256 before forming \cls{CacheKey}; raw tokens never stored or logged & \cls{CacheKey.of()} implementation (MAG-QR-06)\\\bottomrule\end{longtable}
-\textbf{Exception hierarchy / status mapping:} \cls{CircuitOpenException} $\rightarrow$ HTTP 503 Service Unavailable (with \texttt{Retry-After}); \cls{AuthenticationException} $\rightarrow$ HTTP 401 Unauthorized; Upstream timeouts $\rightarrow$ HTTP 504 Gateway Timeout; Upstream network errors $\rightarrow$ HTTP 502 Bad Gateway.\\
-\textbf{Logging and secret-handling:} Admin tokens are supplied through HTTP headers in the UI tester only and are never hardcoded in source code or committed to configuration files. Cache keys hash user tokens with SHA-256 to prevent cross-tenant data leaks and log exposure.
+JWT authentication & Missing, malformed, expired, bad signature and \texttt{alg=none} rejected & \todo{tests / 401 response}\\
+Route/config inputs & Missing URL/path, negative TTL/rules rejected & \todo{validation tests}\\
+Admin API & Authentication/authorization, field-level errors & \todo{API tests}\\
+Upstream calls & Timeout and null/5xx failures are reported to resilience logic; null upstream response is an HTTP 502 & \texttt{ResilientUpstreamClientTest}; \texttt{testNullUpstreamResponse} and 5xx fail-fast tests are present\\
+Cross-module faults & Structured exceptions; no confidential data in logs & \todo{mapper/logger evidence}\\\bottomrule\end{longtable}
+\textbf{Exception hierarchy / status mapping:} \todo{add actual exception classes and mapped statuses}.\\
+\textbf{Logging and secret-handling:} \todo{describe verified request IDs and token redaction}.
 
 \section{Concurrency and Thread-Safety (15\%)}\label{sec:concurrency}
 \begin{longtable}{L{3cm} L{4cm} L{4.3cm} L{1.5cm}}\toprule
 \textbf{Component} & \textbf{Hazard} & \textbf{Actual protection / test} & \textbf{Result}\\\midrule\endhead
-Bounded LRU Cache & Race conditions during eviction and node re-ordering & Explicit \cls{ReentrantLock} synchronizing doubly-linked list & Thread-safe\\
-Single-Flight Cache Loading & Thundering herd / cache stampede on cache miss & \cls{ConcurrentHashMap<CacheKey, CompletableFuture>} & 100 req $\rightarrow$ 1 call\\
-Circuit Breaker & Duplicate OPEN transitions under concurrent thread failures & CAS via \cls{AtomicReference<CircuitState>.compareAndSet()} & Exactly 1\\
-Failure Window & Lost updates to failure counts & \cls{AtomicInteger} failure counter in \cls{ClosedState} & Exact count\\
-Config Snapshot & Inconsistent view during runtime route updates & Copy-on-write via \cls{AtomicReference<ConfigSnapshot>} & Zero lock\\\bottomrule\end{longtable}
-\textbf{Concurrency proof:}
-\begin{itemize}[leftmargin=*]
-\item \cls{CachingUpstreamClientTest.testSingleFlightConcurrentRequests()}: 100 concurrent threads request the exact same uncached key simultaneously via \cls{CompletableFuture.supplyAsync()}. Assertion proves the underlying upstream client is invoked exactly 1 time; all 100 callers receive the identical response.
-\item \cls{CircuitBreakerTest.testConcurrentFailuresTransitionToOpenExactlyOnce()}: 10 concurrent threads report simultaneous upstream failures when 1 failure is remaining before threshold. Atomic CAS guarantees exactly one transition to OPEN; no duplicate state events occur.
-\end{itemize}
-\textbf{Thread safety document:} Comprehensive concurrency strategy documented in codebase javadocs and verified via JUnit concurrency suites.
+Rate limiter & Check-then-act allows over-limit requests & Not implemented in the audited M-B filter; test status pending owner evidence & Pending\\
+Cache single-flight & Stampede on same key & \texttt{ConcurrentHashMap<CacheKey, CompletableFuture<...>>}; 100 concurrent cache-miss requests & Exactly 1 upstream call\\
+Circuit breaker & Duplicate state transitions & \texttt{AtomicReference<CircuitState>} plus CAS in \texttt{transitionTo}; 20-thread concurrent failure test & OPEN after threshold; no assertion proves one transition versus duplicate CAS observations beyond state test\\
+Config hot reload & Reader sees inconsistent state & \todo{immutable snapshot and AtomicReference} & \todo{value}\\\bottomrule\end{longtable}
+\textbf{Concurrency proof:} M-C used 100 simultaneous cache-miss requests and observed exactly one upstream call. M-D used 20 simultaneous failure reports against threshold 5 and ended in OPEN state. These tests are repository tests, but a green GitHub Actions CI run and shared CI artifact link are not yet present.\\
+\textbf{Thread safety document:} \evidence{docs/thread-safety-strategy.md} was not found in the audited repository; it remains a pending M2 evidence item.
 
 \section{Code Quality and SOLID Adherence (15\%)}\label{sec:solid}
 \begin{longtable}{L{1cm} L{5.6cm} L{5.7cm}}\toprule
 \textbf{SOLID} & \textbf{Applied design decision} & \textbf{Actual code / test proof}\\\midrule\endhead
-S & \cls{BoundedLruCache} handles only eviction; \cls{CachingUpstreamClient} handles HTTP cache headers and single-flight; \cls{CircuitBreaker} handles state transitions. & Modular class separation in \cls{com.mag.core.cache} and \cls{com.mag.core.resilience}.\\
-O & Open for extension: new circuit states or cache eviction policies can be added without altering \cls{CircuitBreaker} context. & Polymorphic \cls{CircuitState} interface implementations.\\
-L & \cls{CachingUpstreamClient} and \cls{ResilientUpstreamClient} honor the identical contract of \cls{UpstreamClient}; both can replace any client transparently. & Decorator chain in \cls{InfrastructureConfig.java}.\\
-I & Interfaces are focused: \cls{UpstreamClient} has a single \texttt{execute()} method; \cls{CircuitState} exposes only transition methods. & Clean interface definitions in \cls{com.mag.core}.\\
-D & High-level gateway components depend on \cls{UpstreamClient} and \cls{Clock} abstractions; implementations injected via constructors. & Injected \cls{Clock} allows 100\% deterministic time testing.\\\bottomrule\end{longtable}
-\textbf{Findings and resolutions:} Initial Spring Boot configuration had bean collisions where 4 classes implemented \cls{UpstreamClient}; resolved cleanly using \texttt{@Primary} and constructor \texttt{@Qualifier("upstreamClient")} annotations without coupling.
+S & Cache loading and bounded storage are separated into \evidence{CachingUpstreamClient} and \evidence{BoundedLruCache}; circuit delegation and state policy are separated into \evidence{CircuitBreaker} and state classes & Source paths in \texttt{gateway-core/src/main/java/com/mag/core/upstream/impl} and \texttt{.../resilience}\\
+O & Extend RateLimitAlgorithm via registry & \todo{dummy strategy extension test}\\
+L & Replace UpstreamClient and rate-limit implementations under contract & \todo{parametrized contract tests}\\
+I & Small filter, client and configuration interfaces & \todo{interface signatures}\\
+D & M-C and M-D depend on the \evidence{UpstreamClient}, \evidence{Clock} and \evidence{CircuitState} abstractions; constructors receive implementations from application composition or tests & \evidence{CachingUpstreamClient}, \evidence{CircuitBreaker}, \evidence{InfrastructureConfig}\\\bottomrule\end{longtable}
+\textbf{Findings and resolutions:} M-C and M-D retain constructor-injected dependencies and implement narrow domain interfaces. No repository-wide SOLID departure is attributed to these modules. The local M-C fix prevents oversized TTL parsing from escaping; the M-D fix prevents null upstream responses from bypassing gateway exception handling.
 
 \section{TDD and Automated-Test Baseline (10\%)}\label{sec:tdd}
-Automated tests run against implemented business logic with genuine red--green--refactor history:
+The M2 rubric requires test execution against implemented business logic, authentic red--green--refactor history and measured coverage. A 60\% threshold is a final minimum, not an M2 percentage threshold.
 \begin{longtable}{L{3.5cm} L{3.6cm} L{5.1cm}}\toprule
 \textbf{Evidence} & \textbf{Measured/observed} & \textbf{Artifact}\\\midrule\endhead
-Core unit test summary & 28 passed, 0 failed, 0 skipped & \cls{BoundedLruCacheTest} (5), \cls{CachingUpstreamClientTest} (11), \cls{CircuitBreakerTest} (8), \cls{ResilientUpstreamClientTest} (4).\\
-Integration test summary & 5 passed, 0 failed, 0 skipped & \cls{GatewayIntegrationTest} (admin routes, metrics, static files, auth, breaker fail-fast).\\
-Red/green/refactor trace & Three authentic commits & \texttt{9b78180} (test) $\rightarrow$ \texttt{8094301} (feat); \texttt{a7b6f1c} (test) $\rightarrow$ \texttt{ef37bd6} (feat); \texttt{251275c} (test) $\rightarrow$ \texttt{56cf134} (feat).\\\bottomrule\end{longtable}
-\textbf{Verification command(s):} \texttt{mvn -pl gateway-core test} and \texttt{mvn -pl gateway-app test "-Djacoco.skip=true"}.\\
-\textbf{Coverage gaps:} Pipeline filter chaining and PostgreSQL persistence deferred to Milestone 3 following peer completion.
+Maven unit test summary & 30 passed, 0 failures, 0 errors, 0 skipped in gateway-core & \evidence{gateway-core/target/surefire-reports}\\
+Core line coverage (JaCoCo) & 57\% instruction, 54.5\% line, 66\% branch coverage in the actual generated report & \evidence{gateway-core/target/site/jacoco/index.html}\\
+Pipeline tests & \todo{status} & \todo{JUnit files}\\
+Rate-limit/concurrency tests & \todo{status} & \todo{JUnit files}\\
+Cache and breaker tests & Core suite: 30 tests run, 0 failures, 0 errors; cache suite 12 tests, breaker/resilience suite 8 or more tests & \evidence{CachingUpstreamClientTest.java}, \evidence{CircuitBreakerTest.java}, \evidence{ResilientUpstreamClientTest.java}\\
+Integration tests & Gateway integration test file present; execution status not claimed without a run artifact & \evidence{GatewayIntegrationTest.java}\\
+Red/green/refactor trace & Test and implementation commits exist for M-C/M-D; no refactor-only commit or complete team trail was verified & \texttt{9b78180}/\texttt{8094301} and \texttt{a7b6f1c}/\texttt{ef37bd6}\\\bottomrule\end{longtable}
+\textbf{Verification command(s):} \texttt{mvn -pl gateway-core test checkstyle:check}; \texttt{mvn -pl gateway-core jacoco:report}. The full integration/\texttt{clean verify} gate was not claimed because it was not run successfully under the audited environment.\\
+\textbf{Coverage gaps:} The generated core report measured 57\% instruction, 54.5\% line and 66\% branch coverage. M-C cache and M-C upstream implementation coverage is 88\% and 79\% instruction respectively; resilience implementation packages are approximately 86--87\% instruction. Remaining gaps include the unimplemented M-B filter and other owner-owned modules. A final green CI/coverage gate and integration-module JaCoCo report remain pending.
 
 \section{Repository Discipline and Contribution Traceability (10\%)}\label{sec:repo}
-\begin{longtable}{L{3.0cm} L{4.1cm} L{5.2cm}}\toprule
+\begin{longtable}{L{3.0cm} L{4.3cm} L{5cm}}\toprule
 \textbf{Control} & \textbf{Agreed approach} & \textbf{M2 evidence}\\\midrule\endhead
-Branching & Feature branches per module & \texttt{feature/js-cache}, \texttt{feature/js-resilience}, \texttt{feature/js-integration}.\\
-Commit trail & Strictly prefixed TDD commits & \texttt{test:}, \texttt{feat:}, \texttt{fix:}, \texttt{refactor:}. Preserved without squash-merging.\\
-Baseline & Baseline branch and verification & Branch \texttt{feature/js-integration} at commit \texttt{56cf134}.\\
-AI transparency & Independent verification log & \cls{MAG_M2_AI_Usage_Log_Template.tex} entries \texttt{M2-JS-01}, \texttt{M2-JS-02}, \texttt{M2-JS-03}.\\\bottomrule\end{longtable}
+Branching & Independent feature branches and PRs & Feature branches include \texttt{feature/js-cache}, \texttt{feature/js-resilience} and \texttt{feature/js-integration}; PR evidence is limited to one merged PR\\
+Review & Non-author reviewer for merges & PR \#1 is merged, but GitHub returned no reviews or comments; non-author reviewer evidence is pending\\
+CI gate & Build and tests on push/PR & No GitHub Actions workflow or run was exposed; this remains a repository blocker, not claimed as passing\\
+TDD commit trail & \texttt{test:}, \texttt{feat:}, \texttt{refactor:} commits & JS examples: \texttt{9b78180}, \texttt{8094301}, \texttt{a7b6f1c}, \texttt{ef37bd6}; complete-team and refactor trail is not fully evidenced\\
+Baseline & Annotated \texttt{m2-baseline} tag & No local or remote \texttt{m2-baseline} exists; no tag was created or moved\\
+AI transparency & Recorded significant assisted changes & \todo{AI log path/entry IDs}\\\bottomrule\end{longtable}
 \subsection{Individual Responsibility and Evidence}
 \begin{longtable}{L{2.7cm} L{4.4cm} L{5.2cm}}\toprule
 \textbf{Member} & \textbf{Owned work} & \textbf{PR / tests / review evidence}\\\midrule\endhead
-\ma & M-A Proxy Pipeline, shared interfaces & Skeleton interfaces committed; filter implementations BLOCKED.\\
-\mb & M-B Rate Limiting, M-E Admin/Persistence & In-memory snapshot store active; DB persistence and algorithms BLOCKED.\\
-\mc & M-C Cache, M-D Resilience, Dashboard, Integration & Fully implemented and verified: 33 tests green, 3-panel dashboard live.\\\bottomrule\end{longtable}
+\ma & M-A, SOLID tests, CI and construction evidence & \todo{links}\\
+\mb & M-B, M-E and concurrency tests & \todo{links}\\
+\mc & M-C, M-D, integration and dashboard & Commits \texttt{9b78180}, \texttt{8094301}, \texttt{a7b6f1c}, \texttt{ef37bd6}, \texttt{56cf134}; M2 audit and static-analysis reports; PR \#1 merged without recorded reviewer evidence\\\bottomrule\end{longtable}
 
 \section{M2 Build Reproduction and Handover}
-\textbf{Environment:} OpenJDK 21 / 24, Apache Maven 3.9.11, Windows 11 / Linux x86\_64.\\
-\textbf{Setup and start steps:}
-\begin{enumerate}[leftmargin=*]
-\item Start dummy upstreams: \texttt{mvn -pl dummy-upstreams spring-boot:run} (runs on port 9090).
-\item Run unit tests: \texttt{mvn -pl gateway-core test} (28 tests green).
-\item Run integration tests: \texttt{mvn -pl gateway-app test "-Djacoco.skip=true"} (5 tests green).
-\item Start gateway: \texttt{mvn -pl gateway-app spring-boot:run "-Dspring-boot.run.profiles=mock"} (runs on port 8080).
-\item Open demo dashboard: Navigate to \texttt{http://localhost:8080/index.html}.
-\end{enumerate}
-\textbf{Known limitations:} Modules M-A and M-B currently contain placeholder filter implementations that throw \texttt{UnsupportedOperationException}; full end-to-end chaining across all five team modules is deferred to Milestone 3 following completion of peer components.\\
-\textbf{M3 follow-ups:} Complete peer filter chaining, integrate PostgreSQL persistence, and execute soak/load benchmarks.
+\textbf{Environment:} Verified for local evidence: Apache Maven 3.9.11 and Oracle JDK 24.0.2. SpotBugs could not analyze JDK 24 class files because SpotBugs 4.8.6 reported unsupported major version 68. Docker and a final integration database/JDK 21 verification remain pending.\\
+\textbf{Setup and start steps:} \todo{copy verified README commands and environment variables without secrets}.\\
+\textbf{Known limitations:} M-B \texttt{RateLimitFilter.doFilter()} remains a stub. GitHub Actions, branch protection, non-author review evidence and \texttt{m2-baseline} are missing or not verified. SpotBugs produced no usable finding set under JDK 24; Checkstyle reported 0 core violations after the M-C/M-D cleanup and 3 app findings deferred outside M-C/M-D.\\
+\textbf{M3 follow-ups:} \todo{coverage improvements, refactoring, robustness and final demo actions}.
 
 \section*{Conclusion}
-At Milestone 2, the Mini API Gateway contains a fully verified domain core for caching (M-C) and resilience (M-D), integrated through a working decorator chain and a 3-panel interactive operations dashboard. All 33 automated tests execute and pass cleanly, demonstrating genuine adherence to design patterns, defensive validation, thread-safety under concurrent load, and rigorous TDD discipline. Incomplete peer dependencies are explicitly scaffolded without masking real module states.
+The M-C bounded cache and M-D circuit breaker are implemented and have repository/JUnit evidence. The cache covers hit/miss, TTL, LRU eviction, single-flight, user separation and cache eligibility; the breaker covers closed/open/half-open transitions and concurrent state change. The three-panel dashboard and its integration APIs are implemented and integration tests exist. Repository and M2 governance evidence remain incomplete: CI, branch protection, multiple merged/reviewed PRs and \texttt{m2-baseline} are pending verification.
 \end{document}

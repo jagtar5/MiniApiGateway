@@ -150,9 +150,11 @@ public class CachingUpstreamClient implements UpstreamClient {
         if (cacheControl != null) {
             Matcher matcher = MAX_AGE_PATTERN.matcher(cacheControl);
             if (matcher.find()) {
-                long maxAgeSeconds = Long.parseLong(matcher.group(1));
-                if (maxAgeSeconds >= 0) {
+                try {
+                    long maxAgeSeconds = Long.parseLong(matcher.group(1));
                     return clock.now().plusSeconds(maxAgeSeconds);
+                } catch (NumberFormatException | ArithmeticException ignored) {
+                    return clock.now().plus(defaultTtl);
                 }
             }
         }

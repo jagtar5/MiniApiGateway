@@ -113,6 +113,16 @@ class ResilientUpstreamClientTest {
     }
 
     @Test
+    @DisplayName("Null upstream response is converted to 502 and records breaker failure")
+    void testNullUpstreamResponse() {
+        GatewayRequest request = GatewayRequest.builder().method("GET").path("/null").build();
+        when(mockDelegate.execute(request)).thenReturn(null);
+
+        assertThrows(UpstreamUnavailableException.class, () -> resilientClient.execute(request));
+        assertEquals("CLOSED", circuitBreaker.getState().getName());
+    }
+
+    @Test
     @DisplayName("Upstream 5xx response records failure on circuit breaker")
     void testUpstream5xxRecordsFailure() {
         GatewayRequest request = GatewayRequest.builder().method("GET").path("/flaky").build();
