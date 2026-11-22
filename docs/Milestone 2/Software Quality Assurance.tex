@@ -63,7 +63,7 @@ Date: \todo{submission date}
 \newpage
 
 \section{Scope, Ownership and M2 Rubric Coverage}
-This is the Milestone~2 quality evidence report for the MAG implementation. The assessment covers five modules: M-A Proxy Pipeline, M-B Identity \& Traffic Control, M-C Fast-Path Cache, M-D Resilience Engine and M-E Configuration \& Admin. Requirement identifiers are inherited from the SE431 Milestone~1 RTM. The audited M2 source revision is \texttt{2780b4c9da3db887c89ebe58c392c61bc99ae3e6}; \texttt{m2-baseline} is absent.
+This is the Milestone~2 quality evidence report for the MAG implementation. The assessment covers five modules: M-A Proxy Pipeline, M-B Identity \& Traffic Control, M-C Fast-Path Cache, M-D Resilience Engine and M-E Configuration \& Admin. Requirement identifiers are inherited from the SE431 Milestone~1 RTM. The audited M2 source revision was initially \texttt{2780b4c9da3db887c89ebe58c392c61bc99ae3e6}; final M2 evidence and code fixes were committed in \texttt{7913638}; \texttt{m2-baseline} is absent.
 \begin{longtable}{L{6.1cm} L{1.7cm} L{5.4cm}}\toprule
 \textbf{SE431 M2 criterion} & \textbf{Weight} & \textbf{Evidence location}\\\midrule\endhead
 Fagan-style inspection & 20\% & Section~\ref{sec:inspection}\\
@@ -206,8 +206,8 @@ WB-04 & Caching execute & GET entry exists and valid & return cached response; d
 \section{SCM Quality-Gate Evidence (10\%)}\label{sec:scm}
 \begin{longtable}{L{3.4cm} L{4.1cm} L{5.5cm}}\toprule
 \textbf{SCM item} & \textbf{Policy from M1/M2 plan} & \textbf{Observed M2 repository evidence}\\\midrule\endhead
-Feature branches & Owner-specific work and integration branch & \texttt{feature/js-cache}, \texttt{feature/js-resilience}, and \texttt{feature/js-integration} exist. Only \texttt{feature/js-integration} has verified merge evidence.\\
-Review before merge & Non-author reviewer & PR \#1 merged \texttt{feature/js-integration} to \texttt{main}, but GitHub returned no review or comment evidence. No non-author reviewer approval is claimed.\\
+Feature branches & Owner-specific work and integration branch & \texttt{feature/js-cache}, \texttt{feature/js-resilience}, and \texttt{feature/js-integration} exist. PR \#1 and PR \#2 merged \texttt{feature/js-integration} to \texttt{main}; cache and resilience feature branches exist locally but need separate merged PR evidence if required for attribution.\\
+Review before merge & Non-author reviewer & PR \#1 and PR \#2 merged \texttt{feature/js-integration} to \texttt{main}; GitHub returned no review or comment evidence. No non-author reviewer approval is claimed.\\
 Quality gates & Build, tests, analysis in CI & GitHub Actions returned \texttt{total\_count: 0}; no workflow, run or status artifact exists. CI-before-merge is not demonstrated.\\
 Commit trail & \texttt{test:}, \texttt{feat:}, \texttt{refactor:} & Verified JS examples: \texttt{9b78180}, \texttt{8094301}, \texttt{a7b6f1c}, \texttt{ef37bd6}, \texttt{251275c}, \texttt{56cf134}. Some history has no required prefix.\\
 Merge strategy & Preserve TDD history; avoid squash & PR #1 merged one integration branch. Squash/merge setting could not be verified; no evidence of merge-commit preservation was found.\\
@@ -216,7 +216,7 @@ Contribution attribution & Three members' meaningful participation & At least th
 \bottomrule\end{longtable}
 
 PR evidence: \url{https://github.com/jagtar5/MiniApiGateway/pull/1}, merged 2026-11-21. Merge commit is \texttt{c4a5e43}. Branch/main protection information shows \texttt{main} is not protected.\par
-\textbf{Deviations and corrective actions:} Missing branch protection, CI workflow/run evidence, non-author review, at least two additional real merged PRs, complete team attribution and \texttt{m2-baseline}. The repository discipline report and SCM evidence report remain the corrective evidence index: \evidence{docs/m2-repo-discipline.md} and \evidence{docs/scm/m2-scm-evidence.md}. No shared release tag is to be created without team approval.
+\textbf{Deviations and corrective actions:} Branch protection is reported as enabled; retain a GitHub settings screenshot or authenticated repository-admin export as required proof. Missing evidence remains for CI workflow/run evidence, non-author review, at least one additional real merged PR, complete team attribution and \texttt{m2-baseline}. The repository discipline report and SCM evidence report remain the corrective evidence index: \evidence{docs/m2-repo-discipline.md} and \evidence{docs/scm/m2-scm-evidence.md}. No shared release tag is to be created without team approval.
 
 \section{RTM v2, Risk Register and CAPA Update (10\%)}\label{sec:rtm}
 \subsection{Requirements Traceability Matrix v2}
@@ -263,9 +263,9 @@ SpotBugs/Checkstyle reports & \evidence{docs/static-analysis/m2-static-analysis-
 IEEE 1012 V\&V plan & \todo{path or this report}\\
 Black-box test cases & \todo{path or this report}\\
 CFGs, cyclomatic complexity and basis paths & \evidence{docs/test-design/m2-whitebox-test-design.md}; WB-RATE-01, WB-01--WB-11\\
-SCM, CI and M2 baseline evidence & \evidence{docs/scm/m2-scm-evidence.md}; \evidence{docs/m2-repo-discipline.md}; PR \#1; no CI/m2-baseline\\
+SCM, CI and M2 baseline evidence & \evidence{docs/scm/m2-scm-evidence.md}; \evidence{docs/m2-repo-discipline.md}; PR \#1 and PR \#2; branch protection reported by team; no CI/m2-baseline\\
 RTM v2, risk register, CAPA status & \todo{path or sections}\\
 AI Usage Log (separately maintained) & \todo{path / entries}\\\bottomrule\end{longtable}
 \section*{Conclusion}
-For Jagtar Singh's M2 responsibilities, static Checkstyle evidence is complete at 0 core violations after the M-C cleanup; the app has 3 deferred findings. SpotBugs produced no usable findings because JDK 24 was unsupported. The actual cache and circuit CFG/basis paths are documented and mapped to repository JUnit tests; M-B's filter remains blocked. SCM evidence confirms only one merged PR without reviewer/CI/baseline evidence. M3 priorities are a JDK 21-compatible SpotBugs rerun, complete team review/CI/PR evidence, and \texttt{m2-baseline} creation only after team approval.
+For Jagtar Singh's M2 responsibilities, static Checkstyle evidence is complete at 0 core violations after the M-C cleanup; the app has 3 deferred findings. SpotBugs produced no usable findings because JDK 24 was unsupported. The actual cache and circuit CFG/basis paths are documented and mapped to repository JUnit tests; M-B's filter remains blocked. SCM evidence confirms two merged PRs, but reviewer/CI/additional-PR/baseline evidence remains incomplete. M3 priorities are a JDK 21-compatible SpotBugs rerun, complete team review/CI/PR evidence, and \texttt{m2-baseline} creation only after team approval.
 \end{document}

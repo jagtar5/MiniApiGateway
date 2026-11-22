@@ -259,10 +259,10 @@ Red/green/refactor trace & Test and implementation commits exist for M-C/M-D; no
 \section{Repository Discipline and Contribution Traceability (10\%)}\label{sec:repo}
 \begin{longtable}{L{3.0cm} L{4.3cm} L{5cm}}\toprule
 \textbf{Control} & \textbf{Agreed approach} & \textbf{M2 evidence}\\\midrule\endhead
-Branching & Independent feature branches and PRs & Feature branches include \texttt{feature/js-cache}, \texttt{feature/js-resilience} and \texttt{feature/js-integration}; PR evidence is limited to one merged PR\\
-Review & Non-author reviewer for merges & PR \#1 is merged, but GitHub returned no reviews or comments; non-author reviewer evidence is pending\\
+Branching & Independent feature branches and PRs & Feature branches include \texttt{feature/js-cache}, \texttt{feature/js-resilience} and \texttt{feature/js-integration}; PR \#1 and PR \#2 are merged, while at least one additional PR is still targeted by the plan\\
+Review & Non-author reviewer for merges & PR \#1 and PR \#2 are merged, but GitHub returned no reviews or comments; non-author reviewer evidence is pending\\
 CI gate & Build and tests on push/PR & No GitHub Actions workflow or run was exposed; this remains a repository blocker, not claimed as passing\\
-TDD commit trail & \texttt{test:}, \texttt{feat:}, \texttt{refactor:} commits & JS examples: \texttt{9b78180}, \texttt{8094301}, \texttt{a7b6f1c}, \texttt{ef37bd6}; complete-team and refactor trail is not fully evidenced\\
+TDD commit trail & \texttt{test:}, \texttt{feat:}, \texttt{refactor:} commits & JS examples: \texttt{9b78180}, \texttt{8094301}, \texttt{a7b6f1c}, \texttt{ef37bd6}; evidence commit \texttt{7913638} added M2 reports and M-C/M-D fixes\\
 Baseline & Annotated \texttt{m2-baseline} tag & No local or remote \texttt{m2-baseline} exists; no tag was created or moved\\
 AI transparency & Recorded significant assisted changes & \todo{AI log path/entry IDs}\\\bottomrule\end{longtable}
 \subsection{Individual Responsibility and Evidence}
@@ -275,7 +275,7 @@ AI transparency & Recorded significant assisted changes & \todo{AI log path/entr
 \section{M2 Build Reproduction and Handover}
 \textbf{Environment:} Verified for local evidence: Apache Maven 3.9.11 and Oracle JDK 24.0.2. SpotBugs could not analyze JDK 24 class files because SpotBugs 4.8.6 reported unsupported major version 68. Docker and a final integration database/JDK 21 verification remain pending.\\
 \textbf{Setup and start steps:} \todo{copy verified README commands and environment variables without secrets}.\\
-\textbf{Known limitations:} M-B \texttt{RateLimitFilter.doFilter()} remains a stub. GitHub Actions, branch protection, non-author review evidence and \texttt{m2-baseline} are missing or not verified. SpotBugs produced no usable finding set under JDK 24; Checkstyle reported 0 core violations after the M-C/M-D cleanup and 3 app findings deferred outside M-C/M-D.\\
+\textbf{Known limitations:} M-B \texttt{RateLimitFilter.doFilter()} remains a stub. Branch protection is reported enabled, so retain authenticated settings evidence. GitHub Actions, JDK 21 SpotBugs rerun, final integration execution, thread-safety strategy document, non-author PR approval and \texttt{m2-baseline} remain high-priority blockers. SpotBugs produced no usable finding set under JDK 24; Checkstyle reported 0 core violations after the M-C/M-D cleanup and 3 app findings deferred outside M-C/M-D.\\
 \textbf{M3 follow-ups:} \todo{coverage improvements, refactoring, robustness and final demo actions}.
 
 \section*{Conclusion}
