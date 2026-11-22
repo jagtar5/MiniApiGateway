@@ -8,10 +8,10 @@ baseline or certify the quality gate.
 | Date run | `22 November 2026` |
 | Command | `mvn clean verify` |
 | Module | `gateway-core` |
-| Covered lines | `TODO(AN: re-run mvn clean verify)` |
-| Valid lines | `TODO(AN: re-run mvn clean verify)` |
-| Line coverage ratio | `84.69%` |
-| Branch coverage ratio | `74.86%` |
+| Covered lines | `499 covered of 588` |
+| Valid lines | `588` |
+| Line coverage ratio | `84.86%` |
+| Branch coverage ratio | `75.41%` |
 | Configured gate result | `Met` |
 | Report path / evidence | `gateway-core/target/site/jacoco/jacoco.xml` |
 
