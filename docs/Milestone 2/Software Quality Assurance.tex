@@ -63,7 +63,7 @@ Date: \todo{submission date}
 \newpage
 
 \section{Scope, Ownership and M2 Rubric Coverage}
-This is the Milestone~2 quality evidence report for the MAG implementation. The assessment covers five modules: M-A Proxy Pipeline, M-B Identity \& Traffic Control, M-C Fast-Path Cache, M-D Resilience Engine and M-E Configuration \& Admin. Requirement identifiers are inherited from the SE431 Milestone~1 RTM; M2 test and defect links must refer to the actual source revision \todo{commit hash / baseline tag}.
+This is the Milestone~2 quality evidence report for the MAG implementation. The assessment covers five modules: M-A Proxy Pipeline, M-B Identity \& Traffic Control, M-C Fast-Path Cache, M-D Resilience Engine and M-E Configuration \& Admin. Requirement identifiers are inherited from the SE431 Milestone~1 RTM. The audited M2 source revision is \texttt{2780b4c9da3db887c89ebe58c392c61bc99ae3e6}; \texttt{m2-baseline} is absent.
 \begin{longtable}{L{6.1cm} L{1.7cm} L{5.4cm}}\toprule
 \textbf{SE431 M2 criterion} & \textbf{Weight} & \textbf{Evidence location}\\\midrule\endhead
 Fagan-style inspection & 20\% & Section~\ref{sec:inspection}\\
@@ -108,16 +108,28 @@ IN-05 & Are relevant tests and requirement IDs linked to inspected code? & \todo
 \textbf{Inspection summary:} \todo{lines inspected, real defect counts by severity, meeting duration, reinspection outcome}. Do not invent findings.
 
 \section{Static Analysis Report (15\%)}\label{sec:static}
-Run a genuine source-analysis tool against the submitted code. The M2 plan specifies SpotBugs and Checkstyle.\par
+M2 static analysis was performed against \texttt{gateway-core} and \texttt{gateway-app}. The Maven environment used Apache Maven 3.9.11 and Oracle JDK 24.0.2. The report and raw machine-generated files are maintained in \evidence{docs/static-analysis/m2-static-analysis-report.md}.\par
 \begin{longtable}{L{3cm} L{2.2cm} L{2.7cm} L{4.4cm}}\toprule
 \textbf{Tool} & \textbf{Version} & \textbf{Findings count} & \textbf{Actual report path / command}\\\midrule\endhead
-SpotBugs & \todo{version} & \todo{count} & \todo{report location}\\
-Checkstyle & \todo{version} & \todo{count} & \todo{report location}\\\bottomrule\end{longtable}
-\begin{longtable}{L{1.7cm} L{3.9cm} L{2.2cm} L{4.7cm}}\toprule
-\textbf{Finding ID} & \textbf{Issue and location} & \textbf{Disposition} & \textbf{Fix commit or justification}\\\midrule\endhead
-\todo{ID} & \todo{tool output} & \todo{fixed/deferred/false positive} & \todo{evidence}\\\bottomrule\end{longtable}
-\textbf{Major findings disposition:} \todo{confirm actual major results and corrected issues}.\\
-\textbf{Static analysis limitations:} \todo{note checks not run or unresolved items}.
+SpotBugs Maven plugin & 4.8.6.4 & Analysis failed; 0 usable findings & \evidence{gateway-core-spotbugs.xml}, \evidence{gateway-app-spotbugs.xml}; \texttt{mvn ... spotbugs:spotbugs}\\
+SpotBugs engine & 4.8.6 & 152 analysis errors per module & JDK 24 class-file major version 68 unsupported\\
+Checkstyle Maven plugin & 3.5.0 & 4 initial findings & \texttt{mvn -pl gateway-core,gateway-app checkstyle:check}\\
+Checkstyle engine & 9.3 & Core 0 after fix; app 3 deferred & \evidence{gateway-core-checkstyle.xml}, \evidence{gateway-app-checkstyle.xml}\\\bottomrule\end{longtable}
+
+Initial Checkstyle findings and dispositions:
+\begin{longtable}{L{1.7cm} L{4.0cm} L{2.2cm} L{4.2cm}}\toprule
+\textbf{Finding ID} & \textbf{Issue and location} & \textbf{Disposition} & \textbf{Fix or justification}\\\midrule\endhead
+CS-CORE-1 & Unused import \texttt{java.util.UUID}; \texttt{RequestIdFilter.java}:7 & Fixed & Import removed locally; core rerun: 0 Checkstyle violations. No fixing commit SHA exists yet.\\
+CS-APP-1 & Unused import \texttt{AuthenticationException}; \texttt{JjwtTokenVerifier.java}:4 & Deferred & Outside M-C/M-D; application/auth owner unchanged.\\
+CS-APP-2 & Cyclomatic complexity 21; \texttt{GatewayServletEntryPoint.java}:55 & Deferred & Outside M-C/M-D; application integration owner unchanged.\\
+CS-APP-3 & Cyclomatic complexity 11; \texttt{SimpleHttpUpstreamClient.java}:39 & Deferred & Outside M-C/M-D; application upstream owner unchanged.\\
+M-C-DEF-1 & Oversized/malformed \texttt{max-age} could escape TTL parsing & Fixed & Added default-TTL fallback in \evidence{CachingUpstreamClient.java}; covered by \texttt{testOversizedMaxAgeFallsBackToDefaultTtl}.\\
+M-D-DEF-1 & Null upstream response bypassed structured 502 handling; broad \texttt{Throwable} handling & Fixed & Null response now produces 502 \texttt{UpstreamUnavailableException}; \texttt{Error} is propagated. Covered by \texttt{testNullUpstreamResponse}.\\
+\bottomrule\end{longtable}
+
+\textbf{Severity and triage:} The four tool findings were Checkstyle warnings. M-C-DEF-1 and M-D-DEF-1 are genuine code-review defects with no SpotBugs finding, now Fixed in the working tree and verified by JUnit. No False Positive is claimed.\par
+\textbf{Major findings disposition:} No major SpotBugs finding is claimed. SpotBugs 4.8.6 could not analyze JDK 24 major-version-68 class files. The M-C/M-D fixes were verified by 30 core JUnit tests with zero failures and a core rerun with zero Checkstyle violations.\par
+\textbf{Static analysis limitations:} Raw Checkstyle XML and failed SpotBugs XML are preserved under \evidence{docs/static-analysis/raw/}. A JDK 21-compatible rerun and fixing commit SHAs remain pending.
 
 \section{Verification and Validation Plan (IEEE 1012) (15\%)}\label{sec:vv}
 \textbf{Purpose and scope:} Verify that modules M-A through M-E conform to requirements, and validate that the integrated gateway behaves as intended in representative user scenarios. Verification asks whether the implementation meets specified requirements; validation asks whether the resulting system serves the intended needs.
@@ -160,31 +172,51 @@ BB-16 & QR-03 & Timeout boundary / just after (BVA) & Conformant timeout & \todo
 Analyze the \emph{actual implementation} of \texttt{RateLimitFilter.doFilter()}, \texttt{CircuitBreaker.allowRequest()} and \texttt{CachingUpstreamClient.execute()}. The CFG nodes/edges below must be completed after code is stabilized; do not assume a proposed graph equals implemented control flow.
 \subsection{CFG Inventory and Cyclomatic Complexity}
 For a connected CFG, $V(G) = E-N+2$; more generally $V(G) = E-N+2P$, where $P$ is the number of connected components.
-\begin{longtable}{L{4.6cm} L{1.5cm} L{1.5cm} L{1.5cm} L{3.3cm}}\toprule
-\textbf{Method} & \textbf{Nodes} & \textbf{Edges} & $V(G)$ & \textbf{CFG diagram reference}\\\midrule\endhead
-\texttt{RateLimitFilter.doFilter} & \todo{N} & \todo{E} & \todo{V} & \todo{figure/link}\\
-\texttt{CircuitBreaker.allowRequest} & \todo{N} & \todo{E} & \todo{V} & \todo{figure/link}\\
-\texttt{CachingUpstreamClient.execute} & \todo{N} & \todo{E} & \todo{V} & \todo{figure/link}\\\bottomrule\end{longtable}
+The actual source revision is \texttt{2780b4c9da3db887c89ebe58c392c61bc99ae3e6}. For connected CFGs, $V(G)=E-N+2P$; $P=1$ here, so $V(G)=E-N+2$.\par
+\begin{longtable}{L{4.7cm} L{1.2cm} L{1.2cm} L{1.3cm} L{3.6cm}}\toprule
+\textbf{Method / state} & \textbf{N} & \textbf{E} & $V(G)$ & \textbf{JUnit/test status}\\\midrule\endhead
+\texttt{RateLimitFilter.doFilter} & 3 & 2 & 1 & Stub: no JUnit\\
+\texttt{CircuitBreaker.allowRequest} & 3 & 2 & 1 & Direct dispatch: state tests present\\
+\texttt{ClosedState.allowRequest} & 3 & 2 & 1 & Tested by initial-CLOSED test\\
+\texttt{OpenState.allowRequest} & 8 & 9 & 3 & CAS-loser branch not direct\\
+\texttt{HalfOpenState.allowRequest} & 5 & 5 & 2 & Probe allow/exhaustion tested\\
+\texttt{CachingUpstreamClient.execute} & 10 & 12 & 4 & All four direct basis paths tested\\\bottomrule\end{longtable}
+
+\textbf{RateLimitFilter CFG:} Source \evidence{gateway-core/src/main/java/com/mag/core/filter/impl/RateLimitFilter.java}:30--35 has entry $\rightarrow$ throw \texttt{UnsupportedOperationException} $\rightarrow$ exit, with $N=3$, $E=2$, $V(G)=1$. It is blocked because M-B has not implemented the filter; no allowed/denied or 429 paths exist.\par
+\textbf{CircuitBreaker CFG:} Direct dispatch at \evidence{gateway-core/src/main/java/com/mag/core/resilience/CircuitBreaker.java}:37--39 is entry $\rightarrow$ \texttt{state.get().allowRequest(this)} $\rightarrow$ return. OPEN has elapsed and CAS decisions ($N=8$, $E=9$, $V(G)=3$); HALF-OPEN has probe-count decision ($N=5$, $E=5$, $V(G)=2$); CLOSED is linear ($V(G)=1$). Actual state sources are \evidence{ClosedState.java}, \evidence{OpenState.java}, and \evidence{HalfOpenState.java}.\par
+\textbf{CachingUpstreamClient CFG:} Source \evidence{gateway-core/src/main/java/com/mag/core/upstream/impl/CachingUpstreamClient.java}:62--80 has nodes: entry/null check (1), non-GET condition (2), delegate return (3), cache key (4), cache get (5), cache-null condition (6), expired condition (7), cache-hit return (8), \texttt{executeSingleFlight} (9), exit (10). Edges: $1\rightarrow2$, $2Y\rightarrow3$, $2N\rightarrow4$, $4\rightarrow5$, $5\rightarrow6$, $6Y\rightarrow7$, $6N\rightarrow9$, $7Y\rightarrow8$, $7N\rightarrow9$, $3\rightarrow10$, $8\rightarrow10$, $9\rightarrow10$. Thus $N=10$, $E=12$, $V(G)=12-10+2=4$. The compound cache condition contributes two decisions: cache null and cache expired.
 \subsection{Basis Path Test Mapping}
 \begin{longtable}{L{1.4cm} L{2.4cm} L{4.6cm} L{2.8cm} L{2cm}}\toprule
-\textbf{Path ID} & \textbf{Method} & \textbf{Independent branch/path and trigger} & \textbf{Expected outcome} & \textbf{JUnit / RTM}\\\midrule\endhead
-WB-01 & RateLimitFilter & \todo{nodes and condition} & \todo{result} & \todo{links}\\
-WB-02 & CircuitBreaker & \todo{nodes and condition} & \todo{result} & \todo{links}\\
-WB-03 & CachingUpstreamClient & \todo{nodes and condition} & \todo{result} & \todo{links}\\\bottomrule\end{longtable}
-\textbf{CFG figures:} \todo{insert \texttt{\\includegraphics} of actual CFGs or TikZ diagrams and caption each}.\\
-\textbf{Basis set completeness:} \todo{at least V(G) independent paths per selected connected method, each tied to actual JUnit test}.
+\textbf{Path ID} & \textbf{Method/state} & \textbf{Independent branch/path and trigger} & \textbf{Expected outcome} & \textbf{JUnit / RTM}\\\midrule\endhead
+WB-RATE-01 & RateLimitFilter & Stub reached by any context/chain & UnsupportedOperationException & None; MAG-FR-02, blocked\\
+WB-06 & Circuit/CLOSED & Initial breaker, no failures & allowRequest returns true & \texttt{testInitialStateClosed}; MAG-QR-02\\
+WB-07 & Circuit/OPEN & Timeout not elapsed & return false and fail fast & \texttt{testTripCircuitBreakerFailsFast}; MAG-QR-02\\
+WB-08 & Circuit/OPEN & Timeout elapsed; CAS succeeds & transition to HALF-OPEN and allow probe & \texttt{testOpenToHalfOpenTransition}; MAG-QR-02/10\\
+WB-09 & Circuit/HALF-OPEN & Probe budget exhausted & return false & \texttt{testHalfOpenLimitsProbes}; MAG-QR-02\\
+WB-10 & Circuit/OPEN & Timeout elapsed; CAS loses & recursively re-dispatch allowRequest & No direct JUnit; MAG-QR-02\\
+WB-11 & Circuit/HALF-OPEN & Probe slot available & decrement and return true & \texttt{testOpenToHalfOpenTransition}; MAG-QR-02\\
+WB-01 & Caching execute & Non-GET request & bypass cache; delegate directly & \texttt{testNonGetRequestsNeverCached}; MAG-FR-03\\
+WB-02 & Caching execute & GET cache entry null/miss & single-flight load/miss & \texttt{testCacheHitAndMiss}, \texttt{testSingleFlight100ConcurrentRequests}; MAG-FR-03/QR-01/06\\
+WB-03 & Caching execute & GET entry exists but expired & execute single-flight/upstream again & \texttt{testTtlExpiry}, \texttt{testCacheControlMaxAgeTtl}; MAG-FR-03/QR-10\\
+WB-04 & Caching execute & GET entry exists and valid & return cached response; delegate bypassed & \texttt{testCacheHitAndMiss}, \texttt{testCacheHitBypassesResilientUpstreamClient}; MAG-FR-03/QR-02\\
+\bottomrule\end{longtable}
+\textbf{Basis-set completeness:} M-C has four direct basis paths and all four have repository JUnit coverage. The direct circuit dispatcher is linear; effective state behavior is mapped above, with WB-10 explicitly marked as not directly tested. M-B has no implemented basis set beyond the stub path. Additional cache helper tests cover non-200, Set-Cookie, private/no-store and cross-user isolation.\par
+\textbf{Evidence reference:} \evidence{docs/test-design/m2-whitebox-test-design.md}, with method paths and test method names.
 
 \section{SCM Quality-Gate Evidence (10\%)}\label{sec:scm}
 \begin{longtable}{L{3.4cm} L{4.1cm} L{5.5cm}}\toprule
 \textbf{SCM item} & \textbf{Policy from M1/M2 plan} & \textbf{Observed M2 repository evidence}\\\midrule\endhead
-Feature branches & Owner-specific work and integration branch & \todo{branch and PR links}\\
-Review before merge & Non-author reviewer & \todo{review approvals}\\
-Quality gates & Build, tests, analysis in CI & \todo{run URLs and statuses}\\
-Commit trail & \texttt{test:}, \texttt{feat:}, \texttt{refactor:} & \todo{actual commit sequence}\\
-Merge strategy & Preserve TDD history; avoid squash & \todo{GitHub settings / PR proof}\\
-Milestone baseline & Annotated \texttt{m2-baseline} tag & \todo{tag SHA and reproduction steps}\\
-Contribution attribution & Three members' meaningful participation & \todo{commit/review samples}\\\bottomrule\end{longtable}
-\textbf{Deviations and corrective actions:} \todo{real repository controls not achieved or exceptions, with risks}.
+Feature branches & Owner-specific work and integration branch & \texttt{feature/js-cache}, \texttt{feature/js-resilience}, and \texttt{feature/js-integration} exist. Only \texttt{feature/js-integration} has verified merge evidence.\\
+Review before merge & Non-author reviewer & PR \#1 merged \texttt{feature/js-integration} to \texttt{main}, but GitHub returned no review or comment evidence. No non-author reviewer approval is claimed.\\
+Quality gates & Build, tests, analysis in CI & GitHub Actions returned \texttt{total\_count: 0}; no workflow, run or status artifact exists. CI-before-merge is not demonstrated.\\
+Commit trail & \texttt{test:}, \texttt{feat:}, \texttt{refactor:} & Verified JS examples: \texttt{9b78180}, \texttt{8094301}, \texttt{a7b6f1c}, \texttt{ef37bd6}, \texttt{251275c}, \texttt{56cf134}. Some history has no required prefix.\\
+Merge strategy & Preserve TDD history; avoid squash & PR #1 merged one integration branch. Squash/merge setting could not be verified; no evidence of merge-commit preservation was found.\\
+Milestone baseline & Annotated \texttt{m2-baseline} tag & No local or remote \texttt{m2-baseline} exists. \texttt{m1-baseline} exists but is not an M2 baseline. No tag was created or moved.\\
+Contribution attribution & Three members' meaningful participation & At least three real merged PRs could not be identified. Available merged evidence attributes PR \#1 to \texttt{jagtar5}; Ahmad/Anamta contribution evidence is not verified here.\\
+\bottomrule\end{longtable}
+
+PR evidence: \url{https://github.com/jagtar5/MiniApiGateway/pull/1}, merged 2026-11-21. Merge commit is \texttt{c4a5e43}. Branch/main protection information shows \texttt{main} is not protected.\par
+\textbf{Deviations and corrective actions:} Missing branch protection, CI workflow/run evidence, non-author review, at least two additional real merged PRs, complete team attribution and \texttt{m2-baseline}. The repository discipline report and SCM evidence report remain the corrective evidence index: \evidence{docs/m2-repo-discipline.md} and \evidence{docs/scm/m2-scm-evidence.md}. No shared release tag is to be created without team approval.
 
 \section{RTM v2, Risk Register and CAPA Update (10\%)}\label{sec:rtm}
 \subsection{Requirements Traceability Matrix v2}
@@ -193,14 +225,14 @@ Preserve all 17 requirement IDs from M1. Use \emph{Implemented / Partial / Not s
 \textbf{Req. ID} & \textbf{Module} & \textbf{M2 status} & \textbf{BB/WB/JUnit test IDs} & \textbf{Coverage / build evidence}\\\midrule\endhead
 \id{MAG-FR-01} & M-A & \todo{status} & \todo{test IDs} & \todo{evidence}\\
 \id{MAG-FR-02} & M-B & \todo{status} & \todo{test IDs} & \todo{evidence}\\
-\id{MAG-FR-03} & M-C & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-FR-03} & M-C & Implemented & WB-01--WB-04; \texttt{CachingUpstreamClientTest} & 12 cache tests, 0 failures; cache package 88\% instruction coverage\\
 \id{MAG-FR-04} & M-A & \todo{status} & \todo{test IDs} & \todo{evidence}\\
 \id{MAG-QR-01} & M-B & \todo{status} & \todo{test IDs} & \todo{evidence}\\
-\id{MAG-QR-02} & M-D & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-02} & M-D & Implemented & WB-06--WB-11; \texttt{CircuitBreakerTest}, \texttt{ResilientUpstreamClientTest} & 13 breaker/resilience tests in suite, 0 failures; resilience packages approximately 86--87\% instruction coverage\\
 \id{MAG-QR-03} & M-A/M-D & \todo{status} & \todo{test IDs} & \todo{evidence}\\
 \id{MAG-QR-04} & M-E & \todo{status} & \todo{test IDs} & \todo{evidence}\\
 \id{MAG-QR-05} & M-B & \todo{status} & \todo{test IDs} & \todo{evidence}\\
-\id{MAG-QR-06} & M-C & \todo{status} & \todo{test IDs} & \todo{evidence}\\
+\id{MAG-QR-06} & M-C & Implemented & WB-02; \texttt{testDifferentUsersNeverShareCachedResponses}, \texttt{testSingleFlight100ConcurrentRequests} & 100 concurrent misses assert exactly 1 upstream call; separate two-user cache keys\\
 \id{MAG-QR-07} & M-E & \todo{status} & \todo{test IDs} & \todo{evidence}\\
 \id{MAG-QR-08} & All & \todo{status} & \todo{test IDs} & \todo{evidence}\\
 \id{MAG-QR-09} & M-B/M-C & \todo{status} & \todo{test IDs} & \todo{evidence}\\
@@ -215,9 +247,9 @@ Update the risks recorded in the M1 document, including the hard dependency on a
 \textbf{ID} & \textbf{Risk / original owner} & \textbf{P / I / priority} & \textbf{Status} & \textbf{Mitigation evidence / residual risk}\\\midrule\endhead
 R1 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
 R2 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
-R3 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
+R3 & AI-generated code owner cannot explain or verify & M/H/High & Open -- mitigated in M-C/M-D, not fully closed & M-C/M-D source reviewed and defended by JUnit; 30 core tests pass; AI usage log remains pending for complete team evidence\\
 R4 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
-R5 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
+R5 & Cross-user cache leakage & M/H/High & Reduced -- residual risk low, full integration pending & \texttt{CacheKey} user-scoped keys, user-separation JUnit test, Set-Cookie/private exclusion tests; 100-request single-flight test\\
 R6 & \todo{from M1} & \todo{values} & \todo{status} & \todo{evidence}\\
 R7 & External inspector coordination & \todo{values} & \todo{status} & \todo{evidence}\\\bottomrule\end{longtable}
 \subsection{Defect and CAPA Status}
@@ -227,13 +259,13 @@ R7 & External inspector coordination & \todo{values} & \todo{status} & \todo{evi
 \begin{longtable}{L{5.1cm} L{7.6cm}}\toprule
 \textbf{Required artifact} & \textbf{Path / verified link / inclusion status}\\\midrule\endhead
 Inspection checklist, attendance, defect/CAPA log & \todo{path}\\
-SpotBugs/Checkstyle reports & \todo{path}\\
+SpotBugs/Checkstyle reports & \evidence{docs/static-analysis/m2-static-analysis-report.md}; raw XML in \evidence{docs/static-analysis/raw/}\\
 IEEE 1012 V\&V plan & \todo{path or this report}\\
 Black-box test cases & \todo{path or this report}\\
-CFGs, cyclomatic complexity and basis paths & \todo{figures/test IDs}\\
-SCM, CI and M2 baseline evidence & \todo{links}\\
+CFGs, cyclomatic complexity and basis paths & \evidence{docs/test-design/m2-whitebox-test-design.md}; WB-RATE-01, WB-01--WB-11\\
+SCM, CI and M2 baseline evidence & \evidence{docs/scm/m2-scm-evidence.md}; \evidence{docs/m2-repo-discipline.md}; PR \#1; no CI/m2-baseline\\
 RTM v2, risk register, CAPA status & \todo{path or sections}\\
 AI Usage Log (separately maintained) & \todo{path / entries}\\\bottomrule\end{longtable}
 \section*{Conclusion}
-\todo{Report verified M2 quality outcomes, unresolved defects, coverage limitations and M3 priorities.}
+For Jagtar Singh's M2 responsibilities, static Checkstyle evidence is complete at 0 core violations after the M-C cleanup; the app has 3 deferred findings. SpotBugs produced no usable findings because JDK 24 was unsupported. The actual cache and circuit CFG/basis paths are documented and mapped to repository JUnit tests; M-B's filter remains blocked. SCM evidence confirms only one merged PR without reviewer/CI/baseline evidence. M3 priorities are a JDK 21-compatible SpotBugs rerun, complete team review/CI/PR evidence, and \texttt{m2-baseline} creation only after team approval.
 \end{document}

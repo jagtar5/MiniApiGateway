@@ -385,6 +385,25 @@ class CachingUpstreamClientTest {
     }
 
     @Test
+    @DisplayName("Malformed oversized max-age falls back to the configured default TTL")
+    void testOversizedMaxAgeFallsBackToDefaultTtl() {
+        CachingUpstreamClient client = new CachingUpstreamClient(mockDelegate, fakeClock, Duration.ofSeconds(30), 100);
+        GatewayRequest request = GatewayRequest.builder().method("GET").path("/oversized").build();
+        UpstreamResponse response = UpstreamResponse.builder()
+                .statusCode(200)
+                .header("Cache-Control", "public, max-age=999999999999999999999999")
+                .body("ok")
+                .build();
+        when(mockDelegate.execute(request)).thenReturn(response);
+
+        assertEquals("ok", client.execute(request).getBody());
+        fakeClock.advance(Duration.ofSeconds(31));
+        assertEquals("ok", client.execute(request).getBody());
+
+        verify(mockDelegate, times(2)).execute(request);
+    }
+
+    @Test
     @DisplayName("Cache hit bypasses underlying ResilientUpstreamClient / CircuitBreaker")
     void testCacheHitBypassesResilientUpstreamClient() {
         UpstreamClient resilientClientMock = mock(UpstreamClient.class);
